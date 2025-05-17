@@ -1,0 +1,49 @@
+DiffArray - O(1) Offine Range Update O(N) Fix O(1) Point Query
+Array - O(1) Point Update O(1) Point Query
+Presum - O(1) Offline Point Update O(N) Fix O(1) Range Query
+BitSet - O(lgn) Point Update O(lgn) Range Query
+BitSet - O(lgn) Range Update O(lgn) Point Query
+BitSet - 2n - O(lgn) Range Update O(lgn) Range Query
+SegTree - Same as Bitset, but 2N
+
+Sparse Table - O(1) Point Update O(nlgn) Fix O(1) Range Query
+	- Might want an function based one for arbitray ops
+Compact Table - O(1) Point Update O(n) Fix O(1) Range Query
+Sqrt Table -
+	O(sqrt) space live - O(N) stored
+	O(1) PointUpdate
+	O(1) PointQuery
+	O(sqrt) Range Update 
+	O(sqrt) Range Query
+
+DiffArray->Presum O(1) Offline Range Query O(N) Range Query
+
+OfflinePointUpdateRangeQuery
+Of
+OfflineRangeUpdateRangeQuery
+
+
+Types of Arrays:
+Arrays -
+Heap / Complete Tree - 
+Binary Index -
+Trie - (array is like a trie)
+SegTree
+
+IndexedArray
+	- Use function-based approach
+
+Implicit Arrays - dynamic implementation of array
+	- O(lgn) inserts
+	- O(lgn) sorted searches and inserts
+	- O(lgn) rank
+	- could be based on treaps, red-black trees, b-trees or splay trees
+Skiplists
+SuccinctArray - arrays of Bits
+BitSet - with more functionality - range operations and searches
+Wavelet Trees with fast interval operations
+Functional Array - Using tries
+	
+Array to Treap
+Array to Balance Binary Tree
+Mos With Updates
