@@ -1,5 +1,4 @@
-﻿
-namespace Algorithms.Mathematics.Multiplication.NTT;
+﻿namespace Algorithms.Mathematics.Multiplication.NTT;
 
 public class NttCrt
 {

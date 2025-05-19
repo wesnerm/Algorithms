@@ -101,7 +101,7 @@ public static class Polynomials
     public static long[] MultiplyPolynomials(long[] a, long[] b, int size = 0)
     {
         if (size == 0) size = a.Length + b.Length - 1;
-        size = Min(a.Length + b.Length - 1, size);
+        size = Max(0, Min(a.Length + b.Length - 1, size));
         var result = new long[size];
         for (int i = 0; i < a.Length; i++)
             for (int j = Min(size - i, b.Length) - 1; j >= 0; j--)
