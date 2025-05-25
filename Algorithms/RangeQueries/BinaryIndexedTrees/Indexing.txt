@@ -1,0 +1,47 @@
+﻿public PointUpdateRangeQuery(long[] a) : this(a.Length)
+{
+	int n = a.Length;
+	Array.Copy(a, 0, A, 1, n);
+	for (int i = 1; i < n; i++)
+	{
+		int i2 = i + (i & -i);
+		if (i2 < n) A[i2] += A[i];
+	}
+
+	// i + (-~i & ~i))
+	// i + (i+1 & ~i))
+
+Identities
+==========
+~i = -i-1
+-i = ~i+1
+-~i = i+1
+ ~-i = i-1
+
+One-based
+=========
+for (x++; x<len; x += -x & x)
+	a[x] += value
+
+for (x++; x<len; x -= -x & x)
+	sum += a[x]
+
+Zero-based
+==========
+
+for (; x<len; x |= x + 1)
+	a[x] += value
+
+for (; x<len; x += ~x & -~x)
+	a[x] += value
+
+
+for (; x<len; x -= ~x & x + 1)
+	a[x] += value
+
+for (; x<len; x = (x & x + 1) -1)
+	a[x] += value
+
+for (; x<len; x -= ~x & -~x)
+	a[x] += value
+

@@ -1,0 +1,73 @@
+﻿namespace Algorithms.Mathematics.Multiplication.NTT;
+
+// https://www.codechef.com/viewsolution/26459031
+
+public unsafe class Ntt3 : NttBase
+{
+    readonly long[][] w = new long[12][];
+    long[] wsArray;
+
+    public Ntt3(int maxsize, int mod) : base(maxsize)
+    {
+        wsArray = new long[A.Length];
+        Init(mod);
+    }
+
+    void Init(int mod)
+    {
+        int n = A.Length;
+        for (int i = 2, t = 0; i <= n; i <<= 1, t++) {
+            long[] wt = w[t] = new long[i >> 1];
+            long wn = ModPow(3, (mod - 1) / i, mod);
+            wt[0] = 1;
+            for (int j = 1; j < i >> 1; j++)
+                wt[j] = wt[j - 1] * wn % mod;
+        }
+    }
+
+    void rev(long* p, int len)
+    {
+        int j = len >> 1;
+        for (int i = 1; i < len - 1; i++) {
+            if (i < j)
+                Swap(ref p[i], ref p[j]);
+            int k = len >> 1;
+            while (j >= k) {
+                j -= k;
+                k >>= 1;
+            }
+
+            if (j < k)
+                j += k;
+        }
+    }
+
+    protected override void NttCore(int n, long* dest, bool inverse, int mod, int g)
+    {
+        unchecked {
+            rev(dest, n);
+            for (int i = 2, t = 0; i <= n; i <<= 1, t++)
+            for (int j = 0; j < n; j += i)
+            for (int k = j; k < j + (i >> 1); k++) {
+                long u = dest[k];
+                long v = w[t][k - j] * dest[k + (i >> 1)];
+                dest[k] = (u + v) % mod;
+                dest[k + (i >> 1)] = (u - v) % mod;
+            }
+
+            if (inverse) {
+                long* left = dest + 1;
+                long* right = dest + n - 1;
+                while (left < right) {
+                    long tmp = *left;
+                    *left++ = *right;
+                    *right-- = tmp;
+                }
+
+                long nev = Invl(n, mod);
+                for (int i = 0; i < n; i++)
+                    dest[i] = (dest[i] + mod) * nev % mod;
+            }
+        }
+    }
+}

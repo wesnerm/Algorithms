@@ -1,0 +1,130 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace Solution {
+    class Solution {
+        static void Main(string[] args) {
+            int n = int.Parse(Console.ReadLine());
+
+            double[] beds = new double[n];
+            double[] baths = new double[n];
+            double[] sqfts = new double[n];
+            double[] prices = new double[n];
+
+            for (int i=0; i<n; i++)
+            {
+                var array = Console.ReadLine().Split().Select(double.Parse).ToArray();
+                beds[i] = array[0];
+                baths[i] = array[1];
+                sqfts[i] = array[2];
+                prices[i] = array[3];
+            }
+
+            var result = MultipleRegression(prices,beds,baths,sqfts);
+            double bedCoef = result[0];
+            double bathCoef = result[1];
+            double sqftCoef = result[2];
+            double intercept = result[3];
+
+            int n2 = int.Parse(Console.ReadLine());
+            for (int i=0; i<n2; i++)
+            {
+                var array = Console.ReadLine().Split().Select(double.Parse).ToArray();
+                double bed = array[0];
+                double bath = array[1];
+                double sqft = array[2];
+                double price = Math.Round(bedCoef * bed + bathCoef * bath + sqftCoef * sqft + intercept, 6);
+                Console.WriteLine(price);
+            }
+        }
+
+        static double[] MultipleRegression(double[] y, params double[][] xs)
+        {
+            double[] means = xs.Select(z=>z.Average()).ToArray();
+            double ymean = y.Average();
+            double[] variances = xs.Select(Variance).ToArray();
+            double yvar = Variance(y);
+
+            double[] coefs = new double[xs.Length+1];
+            double[] coefs2 = new double[xs.Length+1];
+            
+            for (int i=0; i<coefs.Length; i++)
+                coefs[i] = 2.0;
+
+            
+            for (int iter=0; iter<1000; iter++)
+            {
+                var error = Error(y, xs, coefs);
+                int j = iter % coefs.Length;
+                
+                Console.WriteLine(error);
+                Array.Copy(coefs, 0, coefs2, 0, coefs.Length);
+                
+                for (int i=0; i<coefs.Length; i++)
+                {
+                    var old = coefs[i];    
+                    var unit = 5;
+                    coefs[i] += unit;
+                    var d = (Error(y, xs, coefs)-error) / unit;
+                    Console.WriteLine(d);
+                    coefs[i] = old;
+                        
+                    coefs2[i] -= ALPHA * d;
+                }
+
+                Array.Copy(coefs2, 0, coefs, 0, coefs.Length);
+            }
+            
+            /*
+            const double ALPHA = .0;
+            
+            // 100 Iterations
+            for (int iter=0; iter<100; iter++)
+            {
+                var error = Error(y, xs, coefs);
+                Console.WriteLine(error);
+                Array.Copy(coefs, 0, coefs2, 0, coefs.Length);
+                
+                for (int i=0; i<coefs.Length; i++)
+                {
+                    var old = coefs[i];    
+                    var unit = 5;
+                    coefs[i] += unit;
+                    var d = (Error(y, xs, coefs)-error) / unit;
+                    Console.WriteLine(d);
+                    coefs[i] = old;
+                        
+                    coefs2[i] -= ALPHA * d;
+                }
+
+                Array.Copy(coefs2, 0, coefs, 0, coefs.Length);
+            }
+            */
+                
+            return coefs;
+        }
+
+        static double Error(double[] y, double[][]xs, double[] coefs)
+        {
+            double error = 0;
+            for (int i=0; i<y.Length; i++)
+            {
+                double estimate = coefs[xs.Length];
+                for (int j=0; j<xs.Length; j++)
+                    estimate += coefs[j] * xs[j][i];
+                double indError = y[i] - estimate;
+                error = indError * indError;
+            }
+            return error / 2 / y.Length;
+        }
+
+
+        static double Variance(double[] xs)
+        {
+            var mean = xs.Average();
+            return xs.Sum(x=> (x-mean) * (x-mean))/xs.Length;
+        }
+    }
+}

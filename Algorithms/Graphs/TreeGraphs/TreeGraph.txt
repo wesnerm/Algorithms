@@ -1,0 +1,56 @@
+﻿        public List<Segment> Query2(int x, int y, bool edges = false)
+        {
+            var segments = Segments;
+            segments.Clear();
+            
+            // We could solve this with LCA
+            int lca = Lca(x, y);
+            var lcaHead = Head[lca];
+            int head;
+            int lcaCount = 0;
+
+            // u to lca
+            for (var node = x; node != lca; node = Parent[head])
+            {
+                head = Head[node];
+                if (head == lcaHead)
+                {
+                    if (edges == false)
+                        segments.Add(new Segment(this, lca, node, true));
+                    else if (lca != node)
+                        segments.Add(new Segment(this,
+                            Trace[Begin[lca]+1],
+                            node, true));
+                    lcaCount++;
+                    break;
+                }
+
+                segments.Add(new Segment(this, head, node, true));
+            }
+
+            int sav = segments.Count;
+
+            // lca to v
+            for (var node = y; node != lca; node = Parent[head])
+            {
+                head = Head[node];
+                if (head == lcaHead)
+                {
+                    if (edges == false)
+                        segments.Add(new Segment(this, lca, node, false));
+                    else if (lca != node)
+                        segments.Add(new Segment(this, Trace[Begin[lca] + 1],
+                            node, false));
+                    lcaCount++;
+                    break;
+                }
+                segments.Add(new Segment(this, head, node, false));
+            }
+
+            Debug.Assert(lcaCount < 2);
+            if (lcaCount == 0 && edges == false)
+                segments.Add(new Segment(this, lca, lca, false));
+
+            segments.Reverse(sav, segments.Count - sav);
+            return segments;
+        }

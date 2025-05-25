@@ -1,0 +1,12 @@
+﻿To support range updates and range updates:
+	- Lazy Updates
+	- Delta and Sums in nodes
+	- Add constant to start and subtract constant from end AND second array with deltas to multiply with index
+
+To support range updates and point updates:
+	- Add deltas to ancestor nodes
+	- Add delta to start and subtract delta from end
+
+To support range queries and point updates:
+	- Collect sums
+

@@ -1,0 +1,104 @@
+Data structure work
+===================
+
+Falhaubers or Arithmetic sequence of powers
+	- FFT
+	- Language Interpolation in O(n) using consecutive positive integers
+	- Test for Bernoullis
+	
+FFT
+	- Replace implementation with optimized iterated FFT for integers using complex numbers
+	- Moved pointer-based NTT algorithm to library
+		- Also move the invert algorithm
+	- Moved Benoulli's and it's FFT implementation to Combinatorics dealing with arithmetic sequences
+	- Move primitive roots and generator to separate class
+
+
+	- Fix up regular FFT
+	- Fix up FFT for MOD
+	- Fix up NTT algorithms
+	- Perform performance checks for each 
+	- Use pointers
+	- Check how the stand for high constant operations
+		- Polynomial Interpolation
+		- Polynomial Evaluation
+		- Polynomial Division
+		- Polynomial Inversion
+		- Polynomial Square root
+	
+Range Query Work 
+	- Fix this
+	- Add RangeUpdatePointQuery, PointUpdateRangeQuery, and RangeUpdateRangeQuery
+		- Move from Array,DiffArray,Presum to 
+		- These work in O(1) in offline mode and O(lg n) 
+	- Might replace AltUpdate with these data structures
+	
+Supporting Framework for Interactive and Challenge Problems		
+		
+Binary Climbing Algorithms
+	- Dynamic BitSet Based
+	- Binary Lifting Based
+	- Dynamic Tree Based
+	
+Depth First Tour Tree
+	https://arxiv.org/pdf/1502.05292.pdf
+	- Finish This
+	- Separate into Simple Class 
+		- and more complicated one
+
+We can build a range fit bit by doing this:
+	for (int i=index+1, cnt=1; i<n; i += (-i & i), cnt++)
+		A[i] += cnt * val;
+		
+Rating Predictor Code 
+	- 	https://discuss.codechef.com/t/update-to-the-rating-predictor-by-vsp/19389
+https://discuss.codechef.com/t/codechef-rating-predictor/14850
+
+// Compare this performance to InverseDirect
+// Seems like it would be faster -- also use int rather than long
+protected static long Invl(long a, long mod)
+{
+	long b = mod, p = 1, q = 0;
+	while (b > 0)
+	{
+		long c = a / b;
+		long d = a;
+		a = b;
+		b = d % b;
+		d = p;
+		p = q;
+		q = d - c * q;
+	}
+	return p < 0 ? p + mod : p;
+}
+
+
+
+Review
+=======
+LCA Implementation of INtrPATH
+https://www.codechef.com/viewsolution/24801321
+https://discuss.codechef.com/t/intrpath-editorial/27954/12
+
+FFT For MOD & COUNTIT
+https://www.codechef.com/viewsolution/24756120
+https://www.codechef.com/viewsolution/24509237
+
+Lagrance for COUNTIT
+https://www.codechef.com/viewsolution/24832230 
+https://www.geeksforgeeks.org/lagranges-interpolation/
+
+
+Faulhabers
+https://codeforces.com/blog/entry/60756
+
+PBOX editorial
+https://discuss.codechef.com/t/pboxes-editorial/44102
+
+ArtOfProblemSolving
+https://artofproblemsolving.com/wiki/index.php/Special:MostLinkedCategories
+
+
+
+
+
