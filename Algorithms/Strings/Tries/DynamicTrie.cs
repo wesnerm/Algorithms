@@ -7,10 +7,8 @@ public class DynamicTrie : IEquatable<DynamicTrie>
     static readonly TrieData NullTrie = new();
     public int Hashcode;
     public bool IsWord;
-    public DynamicTrie Left;
+    public DynamicTrie? Left, Middle, Right;
     public char Letter;
-    public DynamicTrie Middle;
-    public DynamicTrie Right;
 
     public bool Equals(DynamicTrie? t)
     {
@@ -117,12 +115,11 @@ public class DynamicTrie : IEquatable<DynamicTrie>
         return result;
     }
 
-    public static TrieData Request(DynamicTrie t, Dictionary<DynamicTrie, TrieData> hash)
+    public static TrieData? Request(DynamicTrie t, Dictionary<DynamicTrie, TrieData> hash)
     {
         if (t == null)
             return null;
-        TrieData result = hash.Get(t);
-        return result;
+        return hash.GetValueOrDefault(t);
     }
 
     public static TrieData Compress(ref DynamicTrie t, Dictionary<DynamicTrie, TrieData> hash)
@@ -130,14 +127,13 @@ public class DynamicTrie : IEquatable<DynamicTrie>
         if (t == null)
             return NullTrie;
 
-        TrieData? data = hash.Get(t);
+        TrieData? data = hash.GetValueOrDefault(t);
         if (data != null) {
             data.Instances++;
             return data;
         }
 
-        data = new TrieData { Trie = t, Instances = 1 };
-        hash.Set(t, data);
+        hash[t] = data = new TrieData { Trie = t, Instances = 1 };
 
         TrieData dataLeft = Compress(ref t.Left, hash);
         TrieData dataRight = Compress(ref t.Right, hash);

@@ -42,8 +42,7 @@ namespace Algorithms.Mathematics;
 
 [Serializable]
 [ComVisible(false)]
-public struct BigRational : IComparable, IComparable<BigRational>, IDeserializationCallback, IEquatable<BigRational>,
-    ISerializable
+public struct BigRational : IComparable, IComparable<BigRational>, IDeserializationCallback, IEquatable<BigRational>
 {
     // ---- SECTION:  members supporting exposed properties -------------*
     BigInteger m_numerator;
@@ -548,23 +547,6 @@ public struct BigRational : IComparable, IComparable<BigRational>, IDeserializat
         catch (ArgumentException e) {
             throw new SerializationException("invalid serialization data", e);
         }
-    }
-
-    [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
-    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        if (info == null) throw new ArgumentNullException("info");
-
-        info.AddValue("Numerator", m_numerator);
-        info.AddValue("Denominator", m_denominator);
-    }
-
-    BigRational(SerializationInfo info, StreamingContext context)
-    {
-        if (info == null) throw new ArgumentNullException("info");
-
-        m_numerator = (BigInteger)info.GetValue("Numerator", typeof(BigInteger));
-        m_denominator = (BigInteger)info.GetValue("Denominator", typeof(BigInteger));
     }
 
     #endregion serialization

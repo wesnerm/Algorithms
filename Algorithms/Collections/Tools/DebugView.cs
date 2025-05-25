@@ -17,7 +17,7 @@ public struct Collection<T> : IEnumerable<T>
         get
         {
             if (collection == null)
-                return null;
+                return Array.Empty<T>();
             return collection.ToArray();
         }
     }
@@ -44,7 +44,7 @@ public class CollectionDebugView<T>
         get
         {
             if (collection == null)
-                return null;
+                return Array.Empty<object>();
             return collection.Cast<object>().ToArray();
         }
     }
@@ -90,9 +90,9 @@ public class DictionaryDebugView<K, V>
         {
             var list = new KeyValuePair<object, object>[dict.Count];
             int i = 0;
-            foreach (KeyValuePair<K, V> pair in dict) {
+            foreach (var pair in dict) {
                 if (i >= list.Length) break;
-                list[i++] = new KeyValuePair<object, object>(pair.Key, pair.Value);
+                list[i++] = new KeyValuePair<object, object>(pair.Key!, pair.Value!);
             }
 
             return list;
@@ -126,31 +126,11 @@ public class SortedDictionaryDebugView<K, V>
             KeyValue<K, V>[] items = list;
             var comparer = Comparer<K>.Default;
             Array.Sort(items,
-                (item1, item2) => comparer.Compare((K)item1.Key, (K)item2.Key));
+                (item1, item2) => comparer.Compare(item1.Key, item2.Key));
             return items;
         }
     }
 }
 
-[DebuggerDisplay("{value}", Name = "[{key,nq}]", Type = "")]
-public class KeyValue<K, V>
-{
-    // Fields
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    readonly K key;
-
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    readonly V value;
-
-    // Methods
-    public KeyValue(K key, V value)
-    {
-        this.value = value;
-        this.key = key;
-    }
-
-    // Properties
-    public object Key => key;
-
-    public object Value => value;
-}
+[DebuggerDisplay("{Value}", Name = "[{Key,nq}]", Type = "")]
+public record KeyValue<K, V>(K? Key, V? Value);
