@@ -1,4 +1,4 @@
-﻿namespace Algorithms.Mathematics.Multiplication;
+﻿namespace Algorithms.Mathematics.Multiplication.WalshTransform;
 
 public static class FastWalshTransform
 {

@@ -1,29 +1,24 @@
 ﻿using static System.Array;
 using static System.Math;
 
-namespace Algorithms.Mathematics.Numerics;
+namespace Algorithms.Mathematics.Multiplication;
 
 public class FastFourierTransformMod
 {
     const int sz = 16;
     const long msk = (1L << sz) - 1;
-    readonly double[] ai;
-    readonly double[] ar;
-    readonly double[] bi;
-    readonly double[] br;
-    readonly long MaxN;
+    readonly double[] ai, ar;
+    readonly double[] bi, br;
+    readonly double[] nai, nar;
+    readonly double[] nbi, nbr;
+    readonly double[] wi, wr;
+    readonly int MaxN;
     readonly int MOD;
-    readonly double[] nai;
-    readonly double[] nar;
-    readonly double[] nbi;
-    readonly double[] nbr;
-    readonly double[] wi;
-    readonly double[] wr;
 
     public FastFourierTransformMod(int shift = 20, int mod = 1000000007)
     {
         MOD = mod;
-        MaxN = 1L << shift;
+        MaxN = 1 << shift;
         double ff = 2 * PI / MaxN;
         wr = new double[MaxN];
         wi = new double[MaxN];
@@ -35,16 +30,40 @@ public class FastFourierTransformMod
         nai = new double[MaxN];
         nbr = new double[MaxN];
         nbi = new double[MaxN];
-        for (long i = 0; i < MaxN; i++) {
+
+        int limit = MaxN >= 4 ? MaxN / 4 : MaxN;
+
+        //var sff = Sin(ff);
+        //var cff = Cos(ff);
+        //var sin = 0d;
+        //var cos = 1d;
+
+        //for (int i = 0; i < limit; i++)
+        //{
+        //    var cosi = wr[i] = cos;
+        //    var sini = wi[i] = sin;
+        //    cos = cosi * cff - sini * sff;
+        //    sin = sini * cff + cosi * sff;
+        //}
+
+        for (long i = 0; i < limit; i++)
+        {
             double ang = ff * i;
-            wr[i] = Cos(ang);
             wi[i] = Sin(ang);
+            wr[i] = Cos(ang);
+        }
+
+        for (int i = limit; i < MaxN; i++)
+        {
+            wr[i] = -wi[i - limit];
+            wi[i] = wr[i - limit];
         }
     }
 
     unsafe void DoFFT(double* ir, double* ii, double* or, double* oi, long n, long k)
     {
-        if (n == 1) {
+        if (n == 1)
+        {
             or[0] = ir[0];
             oi[0] = ii[0];
             return;
@@ -54,7 +73,8 @@ public class FastFourierTransformMod
         n >>= 1;
         DoFFT(ir, ii, or, oi, n, 2 * k);
         DoFFT(ir + k, ii + k, or + n, oi + n, n, 2 * k);
-        for (long i = 0, j = 0; i < n; i++, j += t) {
+        for (long i = 0, j = 0; i < n; i++, j += t)
+        {
             // Multiplication:  (a + bi)(c + di) = (ac -bd) + (bc + ad)i
             // tmp = w[j] * output[i + n];
             double tmpr = wr[j] * or[i + n] - wi[j] * oi[i + n];
@@ -66,14 +86,16 @@ public class FastFourierTransformMod
         }
     }
 
-    public unsafe List<long> Multiply(List<long> a, List<long> b, int limit = int.MaxValue)
+    public unsafe long[] Multiply(ReadOnlySpan<long> a, ReadOnlySpan<long> b, int limit = int.MaxValue)
     {
         // Try out both, sometimes the third one is faster even though the first is constant time.
-        int n = FftSize(a.Count + b.Count - 1);
+        int n = FftSize(a.Length + b.Length - 1);
+        if (n <= 0 || limit <= 0) return Array.Empty<long>();
 
-        for (int i = 0; i < n; i++) {
-            long va = i < a.Count ? a[i] : 0;
-            long vb = i < b.Count ? b[i] : 0;
+        for (int i = 0; i < n; i++)
+        {
+            long va = i < a.Length ? a[i] : 0;
+            long vb = i < b.Length ? b[i] : 0;
 
             ar[i] = va & msk;
             ai[i] = va >> sz;
@@ -84,11 +106,13 @@ public class FastFourierTransformMod
         fixed (double* par = ar, pai = ai)
         fixed (double* pbr = br, pbi = bi)
         fixed (double* pnar = nar, pnai = nai)
-        fixed (double* pnbr = nbr, pnbi = nbi) {
+        fixed (double* pnbr = nbr, pnbi = nbi)
+        {
             DoFFT(par, pai, pnar, pnai, n, 1);
             DoFFT(pbr, pbi, pnbr, pnbi, n, 1);
 
-            for (int i = 0, nin = 0; i < n; i++, nin = n - i) {
+            for (int i = 0, nin = 0; i < n; i++, nin = n - i)
+            {
                 double lAr = nar[i] + nar[nin];
                 double lAi = nai[i] - nai[nin];
                 double gAr = nai[i] + nai[nin];
@@ -115,7 +139,8 @@ public class FastFourierTransformMod
         Reverse(nbi, 1, n - 1);
         int max = Min(n, limit);
         var ans = new List<long>(max);
-        for (long i = 0; i < max; i++) {
+        for (long i = 0; i < max; i++)
+        {
             long aa = (long)(Round(nar[i] / n) % MOD);
             long bb = (long)(Round(nbr[i] / n) % MOD);
             long cc = (long)(Round(nai[i] / n) % MOD);
@@ -124,18 +149,14 @@ public class FastFourierTransformMod
 
         while (ans.Count > 1 && ans[ans.Count - 1] == 0)
             ans.RemoveAt(ans.Count - 1);
-        return ans;
+        return ans.ToArray();
     }
 
-    public List<long> Pow(List<long> x, long n)
+    public long[] Pow(long[] x, long n)
     {
-        //if (n == 0) return new List<long> { 1 };
-        //var t = PolyPow(x, n / 2);
-        //return (n & 1) == 0 ? Multiply(t, t) : Multiply(x, Multiply(t, t));
-
-        if (n <= 1) return n == 1 ? x : new List<long> { 1 };
-        List<long> t = Pow(x, n >> 1);
-        List<long> sq = Multiply(t, t);
+        if (n <= 1) return n == 1 ? x : [1L];
+        long[] t = Pow(x, n >> 1);
+        long[] sq = Multiply(t, t);
         return (n & 1) == 0 ? sq : Multiply(x, sq);
     }
 

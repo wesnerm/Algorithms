@@ -4,7 +4,7 @@
 
 public unsafe class Ntt3 : NttBase
 {
-    readonly long[][] w = new long[12][];
+    readonly long[][] w = new long[30][];
     long[] wsArray;
 
     public Ntt3(int maxsize, int mod) : base(maxsize)
@@ -13,19 +13,19 @@ public unsafe class Ntt3 : NttBase
         Init(mod);
     }
 
-    void Init(int mod)
+    void Init(int mod, int g = 3)
     {
         int n = A.Length;
         for (int i = 2, t = 0; i <= n; i <<= 1, t++) {
             long[] wt = w[t] = new long[i >> 1];
-            long wn = ModPow(3, (mod - 1) / i, mod);
+            long wn = ModPow(g, (mod - 1) / i, mod);
             wt[0] = 1;
             for (int j = 1; j < i >> 1; j++)
                 wt[j] = wt[j - 1] * wn % mod;
         }
     }
 
-    void rev(long* p, int len)
+    void Reverse(long* p, int len)
     {
         int j = len >> 1;
         for (int i = 1; i < len - 1; i++) {
@@ -45,7 +45,7 @@ public unsafe class Ntt3 : NttBase
     protected override void NttCore(int n, long* dest, bool inverse, int mod, int g)
     {
         unchecked {
-            rev(dest, n);
+            Reverse(dest, n);
             for (int i = 2, t = 0; i <= n; i <<= 1, t++)
             for (int j = 0; j < n; j += i)
             for (int k = j; k < j + (i >> 1); k++) {

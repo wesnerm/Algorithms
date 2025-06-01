@@ -1,4 +1,4 @@
-﻿namespace Algorithms.Mathematics.Multiplication;
+﻿namespace Algorithms.Mathematics.Multiplication.WalshTransform;
 
 [TestFixture]
 public class FastWalshTransformTest

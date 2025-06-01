@@ -93,22 +93,22 @@ public unsafe class Conv64
     {
         if (r == 1) return;
         int rr = r / 3;
-        int pos1 = m * rr, pos2 = 2 * m * rr;
-        for (int i = 0; i < rr; ++i) {
+        int pos0 = 0, pos1 = m * rr, pos2 = 2 * m * rr;
+        for (int i = 0; i < rr; ++i, pos0 +=m, pos1 +=m, pos2 += m) {
             for (int j = 0; j < m; ++j) {
-                tmp[j] = p[i * m + j] + p[pos1 + i * m + j] + p[pos2 + i * m + j];
-                tmp[m + j] = p[i * m + j] + OMEGA * p[pos1 + i * m + j] + OMEGA2 * p[pos2 + i * m + j];
-                tmp[2 * m + j] = p[i * m + j] + OMEGA2 * p[pos1 + i * m + j] + OMEGA * p[pos2 + i * m + j];
-                p[i * m + j] = tmp[j];
+                tmp[j] = p[pos0 + j] + p[pos1 + j] + p[pos2 + j];
+                tmp[m + j] = p[pos0 + j] + OMEGA * p[pos1 + j] + OMEGA2 * p[pos2 + j];
+                tmp[2 * m + j] = p[pos0 + j] + OMEGA2 * p[pos1 + j] + OMEGA * p[pos2 + j];
+                p[pos0 + j] = tmp[j];
             }
 
-            Twiddle(tmp + m, m, 3 * i * m / r, p + pos1 + i * m);
-            Twiddle(tmp + 2 * m, m, 6 * i * m / r, p + pos2 + i * m);
+            Twiddle(tmp + m, m, 3 * i * m / r, p + pos1);
+            Twiddle(tmp + 2 * m, m, 6 * i * m / r, p + pos2);
         }
 
         FftDif(p, m, rr);
-        FftDif(p + pos1, m, rr);
-        FftDif(p + pos2, m, rr);
+        FftDif(p + m * rr, m, rr);
+        FftDif(p + 2 * m * rr, m, rr);
     }
 
     // A "Decimation In Time" In-Place Radix-3 Inverse FFT Routine.

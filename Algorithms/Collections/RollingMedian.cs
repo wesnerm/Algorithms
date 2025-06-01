@@ -18,7 +18,32 @@ public class RollingMedian
             maxheap.Enqueue(-minheap.Dequeue());
     }
 
-    public void Remove(double d) { }
+    //public void Remove(double d)
+    //{
+    //    if (d <= GetMedian())
+    //    {
+    //        maxheap.Remove(d);
+    //        while (maxheap.Count < minheap.Count)
+    //            maxheap.Enqueue(-minheap.Dequeue());
+    //    }
+    //    else
+    //    {
+    //        minheap.Remove(-d);
+    //        while (minheap.Count > maxheap.Count)
+    //            maxheap.Enqueue(-minheap.Dequeue());
+    //    }
+    //}
+
+    public double GetMedian()
+    {
+        if (maxheap.Count == 0)
+            throw new InvalidOperationException("No elements in the collection");
+            
+        if (maxheap.Count > minheap.Count)
+            return maxheap.FindMin();
+            
+        return (maxheap.FindMin() - minheap.FindMin()) / 2.0;
+    }
 
     void Adjust() { }
 }

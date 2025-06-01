@@ -18,6 +18,8 @@ public abstract unsafe class NttBase
 
     public long[] Multiply(long[] a, long[] b, int size, int mod = 998244353, int g = 3)
     {
+        if (a.Length == 0 || b.Length == 0) return Array.Empty<long>();
+
         fixed (long* fa = a)
         fixed (long* fb = b)
         fixed (long* dest = A) {

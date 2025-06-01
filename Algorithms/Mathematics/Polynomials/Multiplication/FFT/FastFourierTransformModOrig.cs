@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Algorithms.Mathematics.Numerics;
+namespace Algorithms.Mathematics.Multiplication;
 
 public class FastFourierTransformModOrig
 {
@@ -38,16 +38,17 @@ public class FastFourierTransformModOrig
         }
     }
 
-    public unsafe List<long> Multiply(List<long> a, List<long> b, int limit = int.MaxValue)
+    public unsafe long[] Multiply(ReadOnlySpan<long> a, ReadOnlySpan<long> b, int limit = int.MaxValue)
     {
-        int n = a.Count + b.Count;
+        if (a.Length == 0 || b.Length == 0) return Array.Empty<long>();
+        int n = a.Length + b.Length;
         while ((n & (n - 1)) != 0) n++;
 
         var A = new Complex[n];
         var B = new Complex[n];
         for (int i = 0; i < n; i++) {
-            long va = i < a.Count ? a[i] : 0;
-            long vb = i < b.Count ? b[i] : 0;
+            long va = i < a.Length ? a[i] : 0;
+            long vb = i < b.Length ? b[i] : 0;
 
             A[i] = new Complex(va & mask, va >> shift);
             B[i] = new Complex(vb & mask, vb >> shift);
@@ -85,26 +86,26 @@ public class FastFourierTransformModOrig
 
         Array.Reverse(nA, 1, nA.Length - 1);
         Array.Reverse(nB, 1, nB.Length - 1);
-        var ans = new List<long>(n);
-        for (long i = 0; i < n; i++) {
+        long[]? ans = null;
+        for (long i = n-1; i >= 0; i--) {
             long aa = (long)(Math.Round(nA[i].Real / n) % MOD);
             long bb = (long)(Math.Round(nB[i].Real / n) % MOD);
             long cc = (long)(Math.Round(nA[i].Imaginary / n) % MOD);
-            ans.Add((aa + (bb << shift) + (cc << (2 * shift))) % MOD);
+            long tmp = (aa + (bb << shift) + (cc << (2 * shift))) % MOD;
+            if (tmp != 0)
+            {
+                ans ??= new long[i+1];
+                ans[i] = tmp;
+            }
         }
-
-        while (ans.Count > 1 && ans[ans.Count - 1] == 0)
-            ans.RemoveAt(ans.Count - 1);
-        if (ans.Count > limit)
-            ans.RemoveRange(100001, ans.Count - 100001);
-        return ans;
+        return ans ?? Array.Empty<long>();
     }
 
-    public List<long> Pow(List<long> x, long n)
+    public long[] Pow(long[] x, long n)
     {
-        if (n <= 1) return n == 1 ? x : new List<long> { 1 };
-        List<long> t = Pow(x, n >> 1);
-        List<long> sq = Multiply(t, t);
+        if (n <= 1) return n == 1 ? x : [1];
+        long[] t = Pow(x, n >> 1);
+        long[] sq = Multiply(t, t);
         return (n & 1) == 0 ? sq : Multiply(x, sq);
     }
 }

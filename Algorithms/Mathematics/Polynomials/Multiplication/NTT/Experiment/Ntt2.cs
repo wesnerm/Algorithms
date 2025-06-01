@@ -14,12 +14,14 @@ public unsafe class Ntt2 : NttBase
             fixed (long* ws = wsArray) {
                 long* w = ws + (n >> 1);
                 long t;
-                w[w[0] = 1] = (int)ModPow(g, (mod - 1) / n, mod);
+                w[0] = 1;
+                w[1] = ModPow(g, (mod - 1) / n, mod);
                 if (inverse)
                     w[1] = Invl(w[1], mod);
 
-                for (int i = 2; i < n / 2; i++)
-                    w[i] = (int)(1l * w[i - 1] * w[1] % mod);
+                int nDiv2 = n>>1;
+                for (int i = 2; i < nDiv2; i++)
+                    w[i] = 1L * w[i - 1] * w[1] % mod;
 
                 for (int i = n >> 1; --i > 0;)
                     ws[i] = ws[i * 2];

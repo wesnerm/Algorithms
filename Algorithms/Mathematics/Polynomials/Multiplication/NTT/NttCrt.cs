@@ -8,12 +8,22 @@ public class NttCrt
 
     public NttCrt(NttBase ntt) => this.ntt = ntt;
 
-    public long[] Multiply(long[] a, long[] b, int size, int mod)
+    public long[] Multiply(long[] a, long[] b, int size, int mod = 0)
     {
         int use = Primes.Length;
         long[][] fs = new long[use][];
+
+        var aa = new long[a.Length];
+        var bb = new long[b.Length];
+
         for (int k = 0; k < use; k++)
-            fs[k] = ntt.Multiply(a, b, size, Primes[k], PrimitiveRoots[k]);
+        {
+            var p = Primes[k];
+            for (int i = 0; i < aa.Length; i++) aa[i] = a[i] % p;
+            for (int i = 0; i < bb.Length; i++) bb[i] = b[i] % p;
+
+            fs[k] = ntt.Multiply(aa, bb, size, p, PrimitiveRoots[k]);
+        }
 
         int[] mods = Primes;
         long[] gammas = Prepare(mods);
@@ -26,12 +36,22 @@ public class NttCrt
             for (int j = 0; j < use; j++) buf[j] = (int)fs[j][i];
             long[] res = Batch(buf, mods, gammas);
             long ret = 0;
-            for (int j = res.Length - 1; j >= 0; j--) ret = (ret * mods[j] + res[j]) % mod;
+            if (mod != 0)
+            {
+                for (int j = res.Length - 1; j >= 0; j--) 
+                    ret = (ret * mods[j] + res[j]) % mod;
+            }
+            else
+            {
+                for (int j = res.Length - 1; j >= 0; j--)
+                    ret = (ret * mods[j] + res[j]);
+            }
             result[i] = ret;
         }
 
         return result;
     }
+
 
     long[] Prepare(int[] m)
     {
