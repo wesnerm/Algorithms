@@ -1,4 +1,5 @@
 ﻿using System.CodeDom.Compiler;
+using System.Runtime.InteropServices;
 using Algorithms.Mathematics.Equations;
 using static System.Math;
 using T = double;
@@ -205,7 +206,7 @@ public static class MatrixOperations
 
     #region Vector Multiplication
 
-    public static T[] MultVector(T[,] a, T[] b, T[] c = null)
+    public static T[] MultVector(T[,] a, T[] b, T[]? c = null)
     {
         int n = a.GetLength(0);
         int m = b.Length;
@@ -221,7 +222,7 @@ public static class MatrixOperations
         return c;
     }
 
-    public static T[] MultVector(T[] a, T[,] b, T[] c = null)
+    public static T[] MultVector(T[] a, T[,] b, T[]? c = null)
     {
         int bcols = b.GetLength(1);
         int mid = a.Length;
@@ -237,7 +238,7 @@ public static class MatrixOperations
         return c;
     }
 
-    public static T[] InnerProduct(T[] v1, T[] v2, T[] c = null)
+    public static T[] InnerProduct(T[] v1, T[] v2, T[]? c = null)
     {
         int n = v1.Length;
         if (c == null) c = new T[n];
@@ -617,15 +618,13 @@ public static class MatrixOperations
 
     public static bool AreClose(T a, T b) => Abs(a - b) < Epsilon;
 
-    public static unsafe int GetHashCode(T[,] m)
+    public static int GetHashCode(T[,] m)
     {
         unchecked {
             int hashCode = 0;
-            fixed (T* p = &m[0, 0]) {
-                for (int i = 0; i < m.Length; i++)
-                    hashCode = (hashCode * 397) ^ p[i].GetHashCode();
-            }
-
+            var p = MemoryMarshal.CreateReadOnlySpan(ref m[0,0], m.Length);
+            for (int i = 0; i < m.Length; i++)
+                hashCode = (hashCode * 397) ^ p[i].GetHashCode();
             return hashCode;
         }
     }

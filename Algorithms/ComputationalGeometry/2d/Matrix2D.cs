@@ -7,6 +7,7 @@
 // Copyright (C) 2002-2010, Wesner Moise.
 //////////////////////////////////////////////////////////////////////////////
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Algorithms.Mathematics;
 
@@ -18,6 +19,7 @@ namespace Algorithms.ComputationalGeometry;
 
 [StructLayout(LayoutKind.Sequential)]
 [DebuggerStepThrough]
+[InlineArray(6)]
 public struct Matrix2D
 {
     #region Construction
@@ -38,9 +40,43 @@ public struct Matrix2D
 
     #region Elements
 
-    public double E11, E12;
-    public double E21, E22;
-    public double OffsetX, OffsetY;
+    private double data;
+
+    public double E11
+    {
+        get => this[0];
+        set => this[0] = value;
+    }
+    public double E12
+    {
+        get => this[1];
+        set => this[1] = value;
+    }
+
+    public double E21
+    {
+        get => this[2];
+        set => this[2] = value;
+    }
+
+    public double E22
+    {
+        get => this[3];
+        set => this[3] = value;
+    }
+
+    public double OffsetX
+    {
+        get => this[4];
+        set => this[4] = value;
+    }
+
+    public double OffsetY
+    {
+        get => this[5];
+        set => this[5] = value;
+    }
+
 
     #endregion
 
@@ -79,60 +115,12 @@ public struct Matrix2D
 
     public bool IsIdentity => E11 == 1 && E22 == 1 && E12 == 0 && E21 == 0 && OffsetX == 0 && OffsetY == 0;
 
-    public unsafe double this[int row, int column] {
-        get
-        {
-            switch (row) {
-                case 1:
-                    row = -1;
-                    break;
-                case 2:
-                    row = 1;
-                    break;
-                case 3:
-                    row = 3;
-                    break;
-                default:
-                    throw new IndexOutOfRangeException();
-            }
-
-            if ((uint)column - 1 >= 2)
-                throw new ArgumentOutOfRangeException();
-
-            fixed (double* p = &E11) {
-                return p[row + column];
-            }
-        }
-        set
-        {
-            switch (row) {
-                case 1:
-                    row = -1;
-                    break;
-                case 2:
-                    row = 1;
-                    break;
-                case 3:
-                    row = 3;
-                    break;
-                default:
-                    throw new IndexOutOfRangeException();
-            }
-
-            if ((uint)column - 1 >= 2)
-                throw new ArgumentOutOfRangeException();
-
-            fixed (double* p = &E11) {
-                p[row + column] = value;
-            }
-        }
-    }
-
     public Point2D Offset => new(OffsetX, OffsetY);
 
     public double Determinant => E11 * E22 - E12 * E21;
 
-    public Matrix2D Inverse {
+    public Matrix2D Inverse
+    {
         [DebuggerStepThrough]
         get
         {
@@ -271,7 +259,8 @@ public struct Matrix2D
 
     public Matrix2D CenterAt(double x, double y)
     {
-        if (x != 0 || y != 0) {
+        if (x != 0 || y != 0)
+        {
             OffsetX += x - x * E11 - y * E21;
             OffsetY += y - x * E12 - y * E22;
         }
@@ -350,12 +339,14 @@ public struct Matrix2D
         double width = rectangle.Width * E11 + rectangle.Height * E12;
         double height = rectangle.Width * E21 + rectangle.Height * E22;
 
-        if (width < 0) {
+        if (width < 0)
+        {
             x += width;
             width = -width;
         }
 
-        if (height < 0) {
+        if (height < 0)
+        {
             y += height;
             height = -height;
         }

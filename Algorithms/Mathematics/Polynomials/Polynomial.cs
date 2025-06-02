@@ -7,13 +7,12 @@ public static class Polynomial
 {
     #region Basic
 
-    public static double[] ShrinkPolynomial(double[] poly)
+    public static ReadOnlySpan<double> ShrinkPolynomial(ReadOnlySpan<double> poly)
     {
         int n = poly.Length;
         while (n > 1 && poly[n - 1] == 0)
             n--;
-        Array.Resize(ref poly, n);
-        return poly;
+        return poly.Slice(0, n);
     }
 
     public static bool IsZero(double[] poly)
@@ -114,8 +113,8 @@ public static class Polynomial
         size = Max(0, Min(a.Length + b.Length - 1, size));
         long[] result = new long[size];
         for (int i = 0; i < a.Length; i++)
-        for (int j = Min(size - i, b.Length) - 1; j >= 0; j--)
-            result[i + j] += a[i] * b[j];
+            for (int j = Min(size - i, b.Length) - 1; j >= 0; j--)
+                result[i + j] += a[i] * b[j];
         return result;
     }
 
@@ -123,7 +122,8 @@ public static class Polynomial
     {
         size = size > 0 ? Min(a.Length + b.Length - 1, size) : a.Length + b.Length - 1;
         long[] result = new long[size];
-        for (int i = 0; i < result.Length; i++) {
+        for (int i = 0; i < result.Length; i++)
+        {
             long r = 0;
             int limit = Min(a.Length, i + 1);
             for (int j = Max(0, i - b.Length + 1); j < limit; j++)
@@ -142,8 +142,8 @@ public static class Polynomial
 
         int[] result = new int[size];
         for (int i = 0; i < a.Length; i++)
-        for (int j = Min(size - i, b.Length) - 1; j >= 0; j--)
-            result[i + j] = (int)((result[i + j] + (long)a[i] * b[j]) % MOD);
+            for (int j = Min(size - i, b.Length) - 1; j >= 0; j--)
+                result[i + j] = (int)((result[i + j] + (long)a[i] * b[j]) % MOD);
         return result;
     }
 
@@ -155,11 +155,12 @@ public static class Polynomial
 
         long[] result = new long[size];
         for (int i = 0; i < a.Length; i++)
-        for (int j = Min(size - i, b.Length) - 1; j >= 0; j--) {
-            long r = (result[i + j] + a[i] * b[j]) % MOD;
-            // if (r >= mod) r -= mod;
-            result[i + j] = r;
-        }
+            for (int j = Min(size - i, b.Length) - 1; j >= 0; j--)
+            {
+                long r = (result[i + j] + a[i] * b[j]) % MOD;
+                // if (r >= mod) r -= mod;
+                result[i + j] = r;
+            }
 
         return result;
     }
@@ -168,14 +169,17 @@ public static class Polynomial
 
     public static long[] MultiplyPolynomialsModFast(long[] a, long[] b, int MOD, int size = 0)
     {
-        unchecked {
+        unchecked
+        {
             size = size > 0 ? Min(a.Length + b.Length - 1, size) : a.Length + b.Length - 1;
             long[] result = new long[size];
             long chop = long.MaxValue / MOD * MOD;
-            for (int i = 0; i < result.Length; i++) {
+            for (int i = 0; i < result.Length; i++)
+            {
                 long r = 0;
                 int limit = Min(a.Length, i + 1);
-                for (int j = Max(0, i - b.Length + 1); j < limit; j++) {
+                for (int j = Max(0, i - b.Length + 1); j < limit; j++)
+                {
                     r += a[j] * b[i - j];
                     if (r < 0) r -= chop;
                 }
@@ -190,13 +194,16 @@ public static class Polynomial
 
     public static long[] MultiplyPolynomialsModFastest(long[] a, long[] b, int MOD, int size = 0)
     {
-        unchecked {
+        unchecked
+        {
             size = size > 0 ? Min(a.Length + b.Length - 1, size) : a.Length + b.Length - 1;
             long[] result = new long[size];
-            for (int i = 0; i < result.Length; i++) {
+            for (int i = 0; i < result.Length; i++)
+            {
                 long r = 0;
                 int limit = Min(a.Length, i + 1);
-                for (int j = Max(0, i - b.Length + 1); j < limit;) {
+                for (int j = Max(0, i - b.Length + 1); j < limit;)
+                {
                     for (int limit2 = Min(j + 18, limit); j < limit2; j++)
                         r += a[j] * b[i - j];
                     r = (long)((ulong)r % (ulong)MOD);
@@ -225,7 +232,8 @@ public static class Polynomial
             return ConvolutionTerm(b, a, term, mod);
 
         long sum = 0;
-        for (int i = Min(a.Length - 1, term); i >= 0; i--) {
+        for (int i = Min(a.Length - 1, term); i >= 0; i--)
+        {
             int j = term - i;
             if (j >= b.Length) break;
             sum += a[i] * b[j] % mod;
@@ -238,53 +246,41 @@ public static class Polynomial
     // https://discuss.codechef.com/questions/127380/sersum-editorial-reupload
     // http://codeforces.com/blog/entry/12513
 
-    public unsafe class AdvancePolyMath
+    public class AdvancePolyMath
     {
         static long[] nra;
         static long[] nrsa;
         static long[] rsa;
         static int mod;
 
-        void poly_mulTo(int n, long* f, long* g)
+        void poly_mulTo(int n, Span<long> f, ReadOnlySpan<long> g)
         {
-            long* c = stackalloc long[n + n];
+            Span<long> c = stackalloc long[n + n];
             for (int i = 0; i < n; i++) c[i] = 0;
             for (int i = 0; i < n; i++)
-            for (int j = 0; i + j < n; j++)
-                c[i + j] = (c[i + j] + f[i] * g[j]) % mod;
-            copy(c, c + n, f);
+                for (int j = 0; i + j < n; j++)
+                    c[i + j] = (c[i + j] + f[i] * g[j]) % mod;
+            c.Slice(0, n).CopyTo(f);
         }
 
-        void copy(long* start, long* limit, long* result)
-        {
-            while (start < limit)
-                *result++ = *start++;
-        }
-
-        void fill(long* start, long* limit, long value)
-        {
-            while (start < limit)
-                *start++ = value;
-        }
-
-        public void InvertPolynomial(int n, long* f, long* r)
+        public void InvertPolynomial(int n, ReadOnlySpan<long> f, Span<long> r)
         {
             //R_2n(z) ≡ 2R_n(z) - Rn(z)^2 F(z) (mod z^2n)
 
             Debug.Assert(f[0] == 1);
-            fill(r, r + n, 0);
+            r.Slice(0, n).Clear();
             r[0] = 1;
 
-            fixed (long* nr = nra) {
-                for (int m = 2; m <= n; m <<= 1) {
-                    int h = m >> 1;
-                    copy(f, f + m, nr);
-                    poly_mulTo(m, nr, r);
-                    fill(nr, nr + h, 0);
-                    for (int i = h; i < m; i++) nr[i] = -nr[i];
-                    poly_mulTo(m, nr, r);
-                    copy(nr + h, nr + m, r + h);
-                }
+            Span<long> nr = nra;
+            for (int m = 2; m <= n; m <<= 1)
+            {
+                int h = m >> 1;
+                f.Slice(0, m).CopyTo(nr);
+                poly_mulTo(m, nr, r);
+                nr.Slice(0, h).Clear();
+                for (int i = h; i < m; i++) nr[i] = -nr[i];
+                poly_mulTo(m, nr, r);
+                nr.Slice(h, m - h).CopyTo(r.Slice(h));
             }
         }
 
@@ -300,7 +296,8 @@ public static class Polynomial
             Array.Copy(b0, 0, b, 0, nn);
             long[] c = MultiplyPolynomialsMod(b0, b0, mod);
             long[] ac = MultiplyPolynomialsMod(a, c, mod);
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < n; i++)
+            {
                 b[i] = 2 * b[i] - ac[i];
                 if (b[i] >= mod) b[i] -= mod;
                 if (b[i] < 0) b[i] += mod;
@@ -318,42 +315,44 @@ public static class Polynomial
         // Compositional inverse
         // http://www.math.ucsd.edu/~jverstra/264A-LECTUREB.pdf
 
-        public void SqrtPolynomial(int n, long* f, long* s)
+        public void SqrtPolynomial(int n, Span<long> f, Span<long> s)
         {
             // S_2n(x) = 1/2(S_n(z) + F(z) * S_n(z)^-1) mod z^2n
 
             // assert(f[0] == 1)
-            fill(s, s + n, 0);
+            s.Slice(0, n).Clear();
             s[0] = 1;
 
             int div2 = (mod + 1) / 2;
 
-            fixed (long* rs = rsa, nrs = nrsa) {
-                fill(rs, rs + n, 0);
-                rs[0] = 1;
-                for (int m = 2; m <= n; m <<= 1) {
-                    int h = m / 2;
+            Span<long> rs = rsa;
+            Span<long> nrs = nrsa;
+            rs.Slice(0, n).Fill(0);
+            rs[0] = 1;
+            for (int m = 2; m <= n; m <<= 1)
+            {
+                int h = m / 2;
 
-                    fill(nrs + h, nrs + m, 0);
+                nrs.Slice(h, m-h).Clear();
 
-                    copy(s, s + h, nrs);
-                    poly_mulTo(m, nrs, rs);
-                    fill(nrs, nrs + h, 0);
-                    for (int i = h; i < m; i++) nrs[i] = -nrs[i];
-                    poly_mulTo(m, nrs, rs);
-                    copy(rs, rs + h, nrs);
+                s.Slice(0, h).CopyTo(nrs);
+                poly_mulTo(m, nrs, rs);
 
-                    poly_mulTo(m, nrs, f);
-                    for (int i = h; i < m; i++)
-                        s[i] = nrs[i] * div2 % mod;
+                nrs.Slice(0, h).Clear();
+                for (int i = h; i < m; i++) nrs[i] = -nrs[i];
+                poly_mulTo(m, nrs, rs);
+                rs.Slice(0, h).CopyTo(nrs);
 
-                    copy(s, s + m, nrs);
-                    poly_mulTo(m, nrs, rs);
-                    fill(nrs, nrs + h, 0);
-                    for (int i = h; i < m; i++) nrs[i] = -nrs[i];
-                    poly_mulTo(m, nrs, rs);
-                    copy(nrs + h, nrs + m, rs + h);
-                }
+                poly_mulTo(m, nrs, f);
+                for (int i = h; i < m; i++)
+                    s[i] = nrs[i] * div2 % mod;
+
+                s.Slice(m).CopyTo(nrs);
+                poly_mulTo(m, nrs, rs);
+                nrs.Slice(0, h).Clear();
+                for (int i = h; i < m; i++) nrs[i] = -nrs[i];
+                poly_mulTo(m, nrs, rs);
+                nrs.Slice(h, m - h).CopyTo(rs.Slice(h));
             }
         }
     }
@@ -362,32 +361,35 @@ public static class Polynomial
 
     #region Division
 
-    static double[] DividePolynomialCore(
-        double[] poly,
-        double[] divisor,
+    static double[]? DividePolynomialCore(
+        ReadOnlySpan<double> poly,
+        ReadOnlySpan<double> divisor,
         bool returnQ,
         out double[] remainder)
     {
         poly = ShrinkPolynomial(poly);
         divisor = ShrinkPolynomial(divisor);
 
-        if (poly.Length < divisor.Length) {
-            remainder = poly;
-            return returnQ ? new double[] { 0 } : null;
+        if (poly.Length < divisor.Length)
+        {
+            remainder = poly.ToArray();
+            return Array.Empty<double>();
         }
 
         double[] p = poly.ToArray();
         int deg = divisor.Length - 1;
-        double[] q = null;
+        double[]? q = null;
         int qshift = 0;
 
-        if (returnQ) {
+        if (returnQ)
+        {
             q = new double[poly.Length - deg];
             qshift = q.Length - poly.Length;
         }
 
         double f0 = divisor[deg];
-        for (int i = poly.Length - 1; i >= deg; i--) {
+        for (int i = poly.Length - 1; i >= deg; i--)
+        {
             if (p[i] == 0) continue;
             double d = p[i] / f0;
             if (q != null) q[i + qshift] = d;
@@ -400,18 +402,18 @@ public static class Polynomial
         return q;
     }
 
-    public static double[] DividePolynomial(double[] dividend, double[] divisor)
+    public static double[]? DividePolynomial(double[] dividend, double[] divisor)
     {
         double[] remainder;
-        double[] quotient = DividePolynomialCore(dividend, divisor, true, out remainder);
+        double[]? quotient = DividePolynomialCore(dividend, divisor, true, out remainder);
         return quotient;
     }
 
-    public static double[] DividePolynomial(double[] dividend, double[] divisor,
+    public static double[]? DividePolynomial(double[] dividend, double[] divisor,
         out double[] remainder)
     {
-        double[] quotient = DividePolynomialCore(dividend, divisor, true, out remainder);
-        remainder = ShrinkPolynomial(remainder);
+        double[]? quotient = DividePolynomialCore(dividend, divisor, true, out remainder);
+        remainder = ShrinkPolynomial(remainder).ToArray();
         return quotient;
     }
 
@@ -419,7 +421,7 @@ public static class Polynomial
     {
         double[] remainder;
         DividePolynomialCore(dividend, divisor, false, out remainder);
-        remainder = ShrinkPolynomial(remainder);
+        remainder = ShrinkPolynomial(remainder).ToArray();
         return remainder;
     }
 
@@ -428,7 +430,8 @@ public static class Polynomial
         double[] d = Differentiate(b);
         var list = new List<double[]>();
         double[] a, c;
-        do {
+        do
+        {
             a = GcdPolynomial(b, d);
             b = DividePolynomial(b, a);
             c = DividePolynomial(d, a);
@@ -441,16 +444,14 @@ public static class Polynomial
 
     public static double[] GcdPolynomial(double[] a, double[] b)
     {
-        while (true) {
+        while (true)
+        {
             if (IsZero(a)) return b;
             b = ModPolynomial(b, a);
             if (IsZero(b)) return a;
             a = ModPolynomial(a, b);
         }
     }
-
-    // Partial Fractions Decomposition
-    // Convergence
 
     #endregion
 }

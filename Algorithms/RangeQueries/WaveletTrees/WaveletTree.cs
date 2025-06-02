@@ -45,12 +45,12 @@ public class WaveletTree
         }
     }
 
-    public static unsafe int Partition(int[] nums, int start, int end, int value)
+    public static int Partition(int[] nums, int start, int end, int value)
     {
         while (start <= end && nums[start] <= value) start++;
         while (start <= end && nums[end] > value) end--;
 
-        int* save = stackalloc int[end - start + 1];
+        Span<int> save = stackalloc int[end - start + 1];
         int len = 0, w = start;
 
         for (int r = start; r <= end; r++)

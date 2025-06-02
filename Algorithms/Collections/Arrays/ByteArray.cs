@@ -319,18 +319,16 @@ public class ByteArray
 
     public double ReadDouble() => BitConverter.Int64BitsToDouble(ReadLong(8));
 
-    public unsafe float ReadFloat()
+    public float ReadFloat()
     {
         int value = Read4();
-        return *(float*)&value;
+        return BitConverter.Int32BitsToSingle(value);
     }
 
-    public unsafe string ReadString()
+    public string ReadString()
     {
         byte length = Read1();
-        fixed (byte* pfixed = &_data[_offset]) {
-            return new string((sbyte*)pfixed, _offset, length, Encoding.UTF8);
-        }
+        return Encoding.UTF8.GetString(_data.AsSpan(_offset, length));
     }
 
     public long ReadCompressed()
@@ -442,14 +440,14 @@ public class ByteArray
         Write(value, 8);
     }
 
-    public unsafe void Write(double value)
+    public void Write(double value)
     {
-        Write(*(long*)&value, 8);
+        Write(BitConverter.DoubleToInt64Bits(value), 8);
     }
 
-    public unsafe void Write(float value)
+    public void Write(float value)
     {
-        Write(*(int*)&value, 4);
+        Write(BitConverter.SingleToInt32Bits(value), 4);
     }
 
     public void Write(string value)

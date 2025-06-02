@@ -37,9 +37,9 @@ public partial class TreeGraph
         Build(root, avoid);
     }
 
-    unsafe void Build(int r = 0, int avoid = -1)
+    void Build(int r = 0, int avoid = -1)
     {
-        int* stack = stackalloc int[Graph.Length + 1];
+        Span<int> stack = stackalloc int[Graph.Length + 1];
         int stackSize = 0, treeSize = 0;
         stack[stackSize++] = r;
         Parent[r] = -1;

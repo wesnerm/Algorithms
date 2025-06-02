@@ -60,7 +60,7 @@ public class FastFourierTransformMod
         }
     }
 
-    unsafe void DoFFT(double* ir, double* ii, double* or, double* oi, long n, long k)
+    void DoFFT(Span<double> ir, Span<double> ii, Span<double> or, Span<double> oi, int n, int k)
     {
         if (n == 1)
         {
@@ -69,11 +69,11 @@ public class FastFourierTransformMod
             return;
         }
 
-        long t = MaxN / n;
+        int t = MaxN / n;
         n >>= 1;
         DoFFT(ir, ii, or, oi, n, 2 * k);
-        DoFFT(ir + k, ii + k, or + n, oi + n, n, 2 * k);
-        for (long i = 0, j = 0; i < n; i++, j += t)
+        DoFFT(ir.Slice(k), ii.Slice(k), or.Slice(n), oi.Slice(n), n, 2 * k);
+        for (int i = 0, j = 0; i < n; i++, j += t)
         {
             // Multiplication:  (a + bi)(c + di) = (ac -bd) + (bc + ad)i
             // tmp = w[j] * output[i + n];
@@ -86,7 +86,7 @@ public class FastFourierTransformMod
         }
     }
 
-    public unsafe long[] Multiply(ReadOnlySpan<long> a, ReadOnlySpan<long> b, int limit = int.MaxValue)
+    public long[] Multiply(ReadOnlySpan<long> a, ReadOnlySpan<long> b, int limit = int.MaxValue)
     {
         // Try out both, sometimes the third one is faster even though the first is constant time.
         int n = FftSize(a.Length + b.Length - 1);
@@ -103,35 +103,29 @@ public class FastFourierTransformMod
             bi[i] = vb >> sz;
         }
 
-        fixed (double* par = ar, pai = ai)
-        fixed (double* pbr = br, pbi = bi)
-        fixed (double* pnar = nar, pnai = nai)
-        fixed (double* pnbr = nbr, pnbi = nbi)
+        DoFFT(ar, ai, nar, nai, n, 1);
+        DoFFT(br, bi, nbr, nbi, n, 1);
+
+        for (int i = 0, nin = 0; i < n; i++, nin = n - i)
         {
-            DoFFT(par, pai, pnar, pnai, n, 1);
-            DoFFT(pbr, pbi, pnbr, pnbi, n, 1);
+            double lAr = nar[i] + nar[nin];
+            double lAi = nai[i] - nai[nin];
+            double gAr = nai[i] + nai[nin];
+            double gAi = nar[nin] - nar[i];
 
-            for (int i = 0, nin = 0; i < n; i++, nin = n - i)
-            {
-                double lAr = nar[i] + nar[nin];
-                double lAi = nai[i] - nai[nin];
-                double gAr = nai[i] + nai[nin];
-                double gAi = nar[nin] - nar[i];
+            double lBr = nbr[i] + nbr[nin];
+            double lBi = nbi[i] - nbi[nin];
+            double gBr = nbi[i] + nbi[nin];
+            double gBi = nbr[nin] - nbr[i];
 
-                double lBr = nbr[i] + nbr[nin];
-                double lBi = nbi[i] - nbi[nin];
-                double gBr = nbi[i] + nbi[nin];
-                double gBi = nbr[nin] - nbr[i];
-
-                ar[i] = (lAr * lBr - gAr * gBi - gAi * gBr - lAi * lBi) * 0.25;
-                ai[i] = (lAi * lBr - gAi * gBi + gAr * gBr + lAr * lBi) * 0.25;
-                br[i] = (gAr * lBr - gBi * lAi + gBr * lAr - gAi * lBi) * 0.25;
-                bi[i] = (gBr * lAi + gBi * lAr + gAr * lBi + gAi * lBr) * 0.25;
-            }
-
-            DoFFT(par, pai, pnar, pnai, n, 1);
-            DoFFT(pbr, pbi, pnbr, pnbi, n, 1);
+            ar[i] = (lAr * lBr - gAr * gBi - gAi * gBr - lAi * lBi) * 0.25;
+            ai[i] = (lAi * lBr - gAi * gBi + gAr * gBr + lAr * lBi) * 0.25;
+            br[i] = (gAr * lBr - gBi * lAi + gBr * lAr - gAi * lBi) * 0.25;
+            bi[i] = (gBr * lAi + gBi * lAr + gAr * lBi + gAi * lBr) * 0.25;
         }
+
+        DoFFT(ar, ai, nar, nai, n, 1);
+        DoFFT(br, bi, nbr, nbi, n, 1);
 
         Reverse(nar, 1, n - 1);
         Reverse(nai, 1, n - 1);

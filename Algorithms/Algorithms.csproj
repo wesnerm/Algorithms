@@ -5,13 +5,13 @@
         <OutputType>Library</OutputType>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+        <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="System.Diagnostics"/>
-        <Using Include="System.Diagnostics.Contracts"/>
-        <Using Include="System.Diagnostics.CodeAnalysis"/>
+        <Using Include="System.Diagnostics" />
+        <Using Include="System.Diagnostics.Contracts" />
+        <Using Include="System.Diagnostics.CodeAnalysis" />
     </ItemGroup>
 
 </Project>

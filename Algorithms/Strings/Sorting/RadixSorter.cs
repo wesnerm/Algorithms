@@ -75,14 +75,14 @@ public class RadixSorter
         public string[] _array;
         public string[] _buffer;
 
-        public unsafe void Sort(int left, int right, int index)
+        public void Sort(int left, int right, int index)
         {
             if (left >= right || index >= _array[left].Length)
                 return;
 
             int buckets = 256;
-            int* offsets = stackalloc int[buckets];
-            int* pos = stackalloc int[buckets];
+            Span<int> offsets = stackalloc int[buckets];
+            Span<int> pos = stackalloc int[buckets];
 
             while (left < right && index < _array[left].Length) {
                 for (int i = 0; i < 10; i++)

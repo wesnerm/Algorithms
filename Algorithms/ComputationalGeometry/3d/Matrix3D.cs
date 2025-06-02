@@ -7,6 +7,7 @@
 // Copyright (C) 2002-2010, Wesner Moise.
 //////////////////////////////////////////////////////////////////////////////
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Algorithms.Mathematics;
 
@@ -146,61 +147,6 @@ public class Matrix3D
         && E12 == 0 && E21 == 0 && E13 == 0
         && E31 == 0 && E23 == 0 && E32 == 0
         && Dx == 0 && Dy == 0 && Dz == 0;
-
-    public unsafe double this[int row, int column] {
-        get
-        {
-            switch (row) {
-                case 1:
-                    row = -1;
-                    break;
-                case 2:
-                    row = 2;
-                    break;
-                case 3:
-                    row = 5;
-                    break;
-                case 4:
-                    row = 8;
-                    break;
-                default:
-                    throw new IndexOutOfRangeException();
-            }
-
-            if ((uint)column - 1 >= 3)
-                throw new ArgumentOutOfRangeException();
-
-            fixed (double* p = &E11) {
-                return p[row + column];
-            }
-        }
-        set
-        {
-            switch (row) {
-                case 1:
-                    row = -1;
-                    break;
-                case 2:
-                    row = 2;
-                    break;
-                case 3:
-                    row = 5;
-                    break;
-                case 4:
-                    row = 8;
-                    break;
-                default:
-                    throw new IndexOutOfRangeException();
-            }
-
-            if ((uint)column - 1 >= 3)
-                throw new ArgumentOutOfRangeException();
-
-            fixed (double* p = &E11) {
-                p[row + column] = value;
-            }
-        }
-    }
 
     public Point3D Offset => new(Dx, Dy, Dz);
 

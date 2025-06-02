@@ -34,7 +34,7 @@ public class RadixHeap
         if (Count < 1) return long.MaxValue;
         if (same.Count > 0)
             return same[0];
-        int i = Log2(unchecked(mask & -mask));
+        int i = (int) long.Log2(unchecked(mask & -mask));
         return lists[i][0];
     }
 
@@ -53,7 +53,7 @@ public class RadixHeap
         }
 
         unchecked {
-            int index = Log2(mask & -mask);
+            int index = (int) long.Log2(mask & -mask);
             List<long> list = lists[index];
             lastDeleted = list[0];
             for (int j = list.Count - 1; j >= 1; j--)
@@ -65,12 +65,6 @@ public class RadixHeap
         return lastDeleted;
     }
 
-    static unsafe int Log2(long value)
-    {
-        double f = (ulong)value + .5; // +.5 -> -1 for zero
-        return (((int*)&f)[1] >> 20) - 1023;
-    }
-
     public void Enqueue(long push)
     {
         Count++;
@@ -80,7 +74,7 @@ public class RadixHeap
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void Place(long value)
     {
-        int log = Log2(value ^ lastDeleted);
+        int log = (int) long.Log2(value ^ lastDeleted);
         if (log >= 0) {
             List<long> list = lists[log];
             if (list.Count > 0 && list[0] > value) {

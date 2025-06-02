@@ -44,11 +44,11 @@ public class NewtonInterpolationMod
             y[i] = Div(y[i] - y[i - 1], x[i] - x[i - j - 1]);
     }
 
-    public unsafe long Interpolate(long a, int n = 0)
+    public long Interpolate(long a, int n = 0)
     {
         if (n == 0) n = this.n;
         long sum = 0;
-        long* factors = stackalloc long[n];
+        Span<long> factors = stackalloc long[n];
         long f = factors[0] = 1;
         for (int i = 1; i < n; i++) {
             long amx = a - x[i - 1];

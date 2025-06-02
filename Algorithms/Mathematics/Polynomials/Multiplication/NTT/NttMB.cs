@@ -2,7 +2,7 @@
 
 namespace Algorithms.Mathematics.Multiplication.NTT;
 
-public unsafe class NttMB : NttBase
+public class NttMB : NttBase
 {
     public NttMB(int maxsize) : base(maxsize) { }
 

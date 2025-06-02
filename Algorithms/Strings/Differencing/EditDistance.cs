@@ -41,7 +41,7 @@ public class EditDistanceAlgorithm
     }
 
     [DebuggerStepThrough]
-    public static unsafe int EditDistanceFast(string source, string target)
+    public static int EditDistanceFast(string source, string target)
     {
         // Mark sure target length is smaller,
         // so space is O( min(source.Length, target.Length) )
@@ -75,7 +75,7 @@ public class EditDistanceAlgorithm
         // Get Lengths
         if (targetLength == 0) return sourceLength;
 
-        int* dist = stackalloc int[targetLength];
+        Span<int> dist = stackalloc int[targetLength];
 
         // Initialize array
         for (int j = 0; j < targetLength; j++)
@@ -105,7 +105,7 @@ public class EditDistanceAlgorithm
         return dist[targetLength - 1];
     }
 
-    public static unsafe int EditDistance(string source, string target,
+    public static int EditDistance(string source, string target,
         int insertion = 1, int deletion = 1, int substitution = 1)
     {
         // Mark sure target length is smaller,
@@ -120,7 +120,7 @@ public class EditDistanceAlgorithm
         // Get Lengths
         if (targetLength == 0) return sourceLength;
 
-        int* dist = stackalloc int[targetLength];
+        Span<int> dist = stackalloc int[targetLength];
 
         // Initialize array
         for (int j = 0; j < targetLength; j++)

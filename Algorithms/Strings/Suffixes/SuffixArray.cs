@@ -183,9 +183,9 @@ public class SuffixArray
             }
         }
 
-        unsafe void RadixSort(Func<Bucket, int> func)
+        void RadixSort(Func<Bucket, int> func)
         {
-            int* offsets = stackalloc int[buckets + 1];
+            Span<int> offsets = stackalloc int[buckets + 1];
 
             for (int i = 0; i < buckets; i++)
                 offsets[i] = 0;

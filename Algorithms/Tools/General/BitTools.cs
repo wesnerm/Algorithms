@@ -346,22 +346,20 @@ public static class BitTools
     {
         // Red-black tree is at most 2 lg n
         // Treap is on average 1.7 lg n (3.7 average worst case)
-        int depth = Log2(leafCount);
+        int depth = int.Log2(leafCount);
         return depth + depth + 1;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int Log2(long value)
+    public static int Log2(long value)
     {
-        double f = unchecked((ulong)value + .5); // +.5 -> -1 for zero
-        return (((int*)&f)[1] >> 20) - 1023;
+        return value != 0 ? (int)long.Log2(value) : -1;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe int Log2(ulong value)
+    static int Log2(ulong value)
     {
-        double f = value + .5; // +.5 -> -1 for zero
-        return (((int*)&f)[1] >> 20) - 1023;
+        return value != 0 ? (int)ulong.Log2(value) : -1;
     }
 
     public static int Log2Original(int value)

@@ -22,7 +22,7 @@
  * We call this new ring T and define the following type for its elements.
  */
 
-public unsafe class Conv64
+public class Conv64
 {
     /*
      * A couple of useful constants: `OMEGA` is a third root of unity, `OMEGA2` is
@@ -35,7 +35,7 @@ public unsafe class Conv64
     static readonly T ONE = 1;
 
     // Temporary space.
-    T* tmp;
+    T[] tmp;
 
     // Returns the product of two polynomials from the ring R[x].
     public long[] Multiply(ReadOnlySpan<long> p, ReadOnlySpan<long> q)
@@ -51,19 +51,14 @@ public unsafe class Conv64
         q.CopyTo(qq);
 
         long[] res = new long[s];
-        fixed (long* pRes = res)
-        fixed (long* ppp = pp)
-        fixed (long* pqq = qq) {
-            MultiplyCyclicRaw(ppp, pqq, pp.Length, pRes);
-        }
-
+        MultiplyCyclicRaw(pp, qq, pp.Length, res);
         return res;
     }
 
     // Returns the product of a polynomial and the monomial x^t in the ring
     // T[x]/(x^m - omega). The result is placed in `to`.
     // NOTE: t must be in the range [0,3m]
-    void Twiddle(T* p, int m, int t, T* to)
+    void Twiddle(ReadOnlySpan<T> p, int m, int t, Span<T> to)
     {
         if (t == 0 || t == 3 * m) {
             for (int j = 0; j < m; ++j) to[j] = p[j];
@@ -89,7 +84,7 @@ public unsafe class Conv64
     // A "Decimation In Frequency" In-Place Radix-3 FFT Routine.
     // Input: A polynomial from (T[x]/(x^m - omega))[y]/(y^r - 1).
     // Output: Its Fourier transform (w.r.t. y) in 3-reversed order.
-    void FftDif(T* p, int m, int r)
+    void FftDif(Span<T> p, int m, int r)
     {
         if (r == 1) return;
         int rr = r / 3;
@@ -102,30 +97,30 @@ public unsafe class Conv64
                 p[pos0 + j] = tmp[j];
             }
 
-            Twiddle(tmp + m, m, 3 * i * m / r, p + pos1);
-            Twiddle(tmp + 2 * m, m, 6 * i * m / r, p + pos2);
+            Twiddle(tmp.AsSpan(m), m, 3 * i * m / r, p.Slice(pos1));
+            Twiddle(tmp.AsSpan(2 * m), m, 6 * i * m / r, p.Slice(pos2));
         }
 
         FftDif(p, m, rr);
-        FftDif(p + m * rr, m, rr);
-        FftDif(p + 2 * m * rr, m, rr);
+        FftDif(p.Slice(m * rr), m, rr);
+        FftDif(p.Slice(2 * m * rr), m, rr);
     }
 
     // A "Decimation In Time" In-Place Radix-3 Inverse FFT Routine.
     // Input: A polynomial in (T[x]/(x^m - omega))[y]/(y^r - 1) with coefficients
     //        in 3-reversed order.
     // Output: Its inverse Fourier transform in normal order.
-    void FftDit(T* p, int m, int r)
+    void FftDit(Span<T> p, int m, int r)
     {
         if (r == 1) return;
         int rr = r / 3;
         int pos1 = m * rr, pos2 = 2 * m * rr;
         FftDit(p, m, rr);
-        FftDit(p + pos1, m, rr);
-        FftDit(p + pos2, m, rr);
+        FftDit(p.Slice(pos1), m, rr);
+        FftDit(p.Slice(pos2), m, rr);
         for (int i = 0; i < rr; ++i) {
-            Twiddle(p + pos1 + i * m, m, 3 * m - 3 * i * m / r, tmp + m);
-            Twiddle(p + pos2 + i * m, m, 3 * m - 6 * i * m / r, tmp + 2 * m);
+            Twiddle(p.Slice(pos1 + i * m), m, 3 * m - 3 * i * m / r, tmp.AsSpan(m));
+            Twiddle(p.Slice(pos2 + i * m), m, 3 * m - 6 * i * m / r, tmp.AsSpan(2 * m));
             for (int j = 0; j < m; ++j) {
                 tmp[j] = p[i * m + j];
                 p[i * m + j] = tmp[j] + tmp[m + j] + tmp[2 * m + j];
@@ -137,7 +132,7 @@ public unsafe class Conv64
 
     // Computes the product of two polynomials in T[x]/(x^n - omega), where n is
     // a power of 3. The result is placed in `to`.
-    void Mul(T* p, T* q, int n, T* to)
+    void Mul(Span<T> p, Span<T> q, int n, Span<T> to)
     {
         if (n <= 27) // 3 is the lowest we can use; 27 is our go to. 
         {
@@ -171,23 +166,23 @@ public unsafe class Conv64
 
         // Move to the ring (T[x]/(x^m - omega))[y]/(y^r - 1) via the map y -> x^(m/r) y
         for (int i = 0; i < r; ++i) {
-            Twiddle(p + m * i, m, m / r * i, to + m * i);
-            Twiddle(q + m * i, m, m / r * i, to + n + m * i);
+            Twiddle(p.Slice(m * i), m, m / r * i, to.Slice(m * i));
+            Twiddle(q.Slice(m * i), m, m / r * i, to.Slice(n + m * i));
         }
 
         // Multiply using FFT
         FftDif(to, m, r);
-        FftDif(to + n, m, r);
+        FftDif(to.Slice(n), m, r);
         for (int i = 0; i < r; ++i)
-            Mul(to + m * i, to + n + m * i, m, to + 2 * n + m * i);
+            Mul(to.Slice(m * i), to.Slice(n + m * i), m, to.Slice(2 * n + m * i));
 
-        FftDit(to + 2 * n, m, r);
+        FftDit(to.Slice(2 * n), m, r);
         for (int i = 0; i < n; ++i)
             to[2 * n + i] *= inv;
 
         // Return to the ring (T[x]/(x^m - omega))[y]/(y^r - omega)
         for (int i = 0; i < r; ++i)
-            Twiddle(to + 2 * n + m * i, m, 3 * m - m / r * i, to + n + m * i);
+            Twiddle(to.Slice(2 * n + m * i), m, 3 * m - m / r * i, to.Slice(n + m * i));
 
         /************************************************************
          * THE PRODUCT IN (T[x]/(x^m - omega^2))[y] / (y^r - omega) *
@@ -201,28 +196,28 @@ public unsafe class Conv64
                 q[m * i + j] = q[m * i + j].conj();
             }
 
-            Twiddle(p + m * i, m, 2 * m / r * i, to + m * i);
-            Twiddle(q + m * i, m, 2 * m / r * i, p + m * i);
+            Twiddle(p.Slice(m * i), m, 2 * m / r * i, to.Slice(m * i));
+            Twiddle(q.Slice(m * i), m, 2 * m / r * i, p.Slice(m * i));
         }
 
         FftDif(to, m, r);
         FftDif(p, m, r);
         for (int i = 0; i < r; ++i)
-            Mul(to + m * i, p + m * i, m, to + 2 * n + m * i);
+            Mul(to.Slice(m * i), p.Slice(m * i), m, to.Slice(2 * n + m * i));
 
-        FftDit(to + 2 * n, m, r);
+        FftDit(to.Slice(2 * n), m, r);
         for (int i = 0; i < n; ++i)
             to[2 * n + i] *= inv;
 
         for (int i = 0; i < r; ++i)
-            Twiddle(to + 2 * n + m * i, m, 3 * m - 2 * m / r * i, q + m * i);
+            Twiddle(to.Slice(2 * n + m * i), m, 3 * m - 2 * m / r * i, q.Slice(m * i));
 
         /**************************************************************************
          * The product in (T[x]/(x^(2m) + x^m + 1))[y]/(y^r - omega) via CRT, and *
          * unravelling the substitution y = x^m at the same time.                 *
          **************************************************************************/
 
-        new Span<T>(to, n).Clear();
+        to.Slice(0, n).Clear();
         for (int i = 0; i < r; ++i)
         for (int j = 0; j < m; ++j) {
             to[i * m + j] += (ONE - OMEGA) * to[n + i * m + j] + (ONE - OMEGA2) * q[i * m + j].conj();
@@ -238,7 +233,7 @@ public unsafe class Conv64
     // Computes the product of two polynomials from the ring R[x]/(x^n - 1), where
     // n must be a power of three. The result is placed in target which must have
     // space for n elements.
-    void MultiplyCyclicRaw(long* p, long* q, int n, long* target)
+    void MultiplyCyclicRaw(ReadOnlySpan<long> p, ReadOnlySpan<long> q, int n, Span<long> target)
     {
         // If n = 3^k, let m = 3^(floor(k/2)) and r = 3^(ceil(k/2))
         int m = 1;
@@ -257,11 +252,13 @@ public unsafe class Conv64
         // qq: length n
         // to: length n + 3*m
         // tmp: length 3*m
-        fixed (T* buf = new T[3 * n + 6 * m]) {
-            T* pp = buf;
-            T* qq = buf + n;
-            T* to = buf + 2 * n;
-            tmp = buf + 3 * n + 3 * m;
+
+        T[] buf = new T[3 * n + 3 * m];
+        {
+            Span<T> pp = buf;
+            Span<T> qq = buf.AsSpan(n);
+            Span<T> to = buf.AsSpan(2 * n);
+            tmp = new T[3 * m];
 
             for (int i = 0; i < n; ++i) {
                 pp[i] = p[i];
@@ -280,7 +277,7 @@ public unsafe class Conv64
             // in S[y]/(y^r - 1).
             FftDif(pp, m, r);
             FftDif(qq, m, r);
-            for (int i = 0; i < r; ++i) Mul(pp + i * m, qq + i * m, m, to + i * m);
+            for (int i = 0; i < r; ++i) Mul(pp.Slice(i * m), qq.Slice(i * m), m, to.Slice(i * m));
             FftDit(to, m, r);
             for (int i = 0; i < n; ++i) pp[i] = to[i] * inv;
 

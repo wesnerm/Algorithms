@@ -2,7 +2,7 @@
 
 // https://www.codechef.com/viewsolution/26459031
 
-public unsafe class Ntt3 : NttBase
+public class Ntt3 : NttBase
 {
     readonly long[][] w = new long[30][];
 

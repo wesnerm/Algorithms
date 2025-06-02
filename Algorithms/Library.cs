@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using static System.Math;
 using static System.Array;
+using System.Numerics;
 
 public static class Library
 {
@@ -224,42 +225,34 @@ public static class Library
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int Log2(long value)
+    public static int Log2(long value)
     {
-        double f = unchecked((ulong)value) + .5; //-> -1 for zero
-        return (((int*)&f)[1] >> 20) - 1023;
+        return unchecked(value != 0 ? BitOperations.Log2((ulong)value) : -1);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int Log2(ulong value)
+    public static int Log2(ulong value)
     {
-        double f = unchecked(value) + .5; // +.5 -> -1 for zero
-        return (((int*)&f)[1] >> 20) - 1023;
+        return value > 0 ? BitOperations.Log2(value) : -1;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int BitCount(long y)
     {
-        ulong x = unchecked((ulong)y);
-        x -= (x >> 1) & 0x5555555555555555;
-        x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
-        x = (x + (x >> 4)) & 0x0f0f0f0f0f0f0f0f;
-        return unchecked((int)((x * 0x0101010101010101) >> 56));
+        return unchecked(BitOperations.PopCount((ulong)y));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     // static int HighestOneBit(int n) => n != 0 ? 1 << Log2(n) : 0;
-    public static unsafe int HighestOneBit(int x)
+    public static int HighestOneBit(int x)
     {
-        double f = unchecked((uint)x);
-        return unchecked((1 << ((((int*)&f)[1] >> 20) - 1023)) & ~(((x - 1) & (-x - 1)) >> 31));
+        return unchecked(x & (1 << BitOperations.Log2((uint)x)));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe long HighestOneBit(long x)
+    public static long HighestOneBit(long x)
     {
-        double f = unchecked((ulong)x);
-        return unchecked((1L << ((((int*)&f)[1] >> 20) - 1023)) & ~(((x - 1) >> 63) & ((-x - 1) >> 63)));
+        return x & (1L << BitOperations.Log2((ulong)x));
     }
 
     public static int TrailingZeros(long x) => Log2(x & -x);
