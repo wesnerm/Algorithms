@@ -111,6 +111,41 @@ public abstract class FftTestBase
         Check(in1, in2, res); // Check the result
     }
 
+    [Test]
+    [TestCase(1000, 64)]
+    [TestCase(3333, 10000)]
+    public void UnevenTest(int size, int size2)
+    {
+        long[] in1 = new long[size]; // Smaller for quicker test
+        long[] in2 = new long[size2];
+
+        var r = new Random(0x123456);
+        for (int i = 0; i < size; ++i)
+        {
+            in1[i] = r.NextInt64(0, long.MaxValue);
+        }
+
+        for (int i = 0; i < size2; ++i)
+        {
+            in2[i] = r.NextInt64(0, long.MaxValue);
+        }
+
+        FixMod(in1, MOD);
+        FixMod(in2, MOD);
+
+        Console.WriteLine("Inputs prepared. Starting multiplication...");
+        var sw = Stopwatch.StartNew();
+        long[] res = Multiply(in1, in2);
+        sw.Stop();
+        Console.WriteLine($"Multiplication took {sw.ElapsedMilliseconds} ms.");
+
+        // Output a few values for verification
+        Console.WriteLine($"Result length: {res.Length} (expected {in1.Length + in2.Length - 1})");
+        WriteResults(res);
+
+        Check(in1, in2, res); // Check the result
+    }
+
     void WriteResults(long[] res, int limit = 20)
     {
         limit = Math.Min(limit, res.Length);

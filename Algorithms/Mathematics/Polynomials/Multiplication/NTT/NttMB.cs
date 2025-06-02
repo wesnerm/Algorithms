@@ -6,8 +6,9 @@ public unsafe class NttMB : NttBase
 {
     public NttMB(int maxsize) : base(maxsize) { }
 
-    protected override void NttCore(int n, long* dst, bool inverse, int mod, int g)
+    protected override void NttCore(Span<long> dst, bool inverse, int mod, int g)
     {
+        int n = dst.Length;
         unchecked {
             int h = Log2(n & -n);
             long b = HighestOneBit((long)mod) << 1;

@@ -5,11 +5,9 @@
 public unsafe class Ntt3 : NttBase
 {
     readonly long[][] w = new long[30][];
-    long[] wsArray;
 
     public Ntt3(int maxsize, int mod) : base(maxsize)
     {
-        wsArray = new long[A.Length];
         Init(mod);
     }
 
@@ -25,12 +23,13 @@ public unsafe class Ntt3 : NttBase
         }
     }
 
-    void Reverse(long* p, int len)
+    void Reverse(Span<long> dest)
     {
+        int len = dest.Length;
         int j = len >> 1;
         for (int i = 1; i < len - 1; i++) {
             if (i < j)
-                Swap(ref p[i], ref p[j]);
+                (dest[i], dest[j]) = (dest[j], dest[i]);
             int k = len >> 1;
             while (j >= k) {
                 j -= k;
@@ -42,10 +41,11 @@ public unsafe class Ntt3 : NttBase
         }
     }
 
-    protected override void NttCore(int n, long* dest, bool inverse, int mod, int g)
+    protected override void NttCore(Span<long> dest, bool inverse, int mod, int g)
     {
+        int n = dest.Length;
         unchecked {
-            Reverse(dest, n);
+            Reverse(dest);
             for (int i = 2, t = 0; i <= n; i <<= 1, t++)
             for (int j = 0; j < n; j += i)
             for (int k = j; k < j + (i >> 1); k++) {
@@ -56,14 +56,7 @@ public unsafe class Ntt3 : NttBase
             }
 
             if (inverse) {
-                long* left = dest + 1;
-                long* right = dest + n - 1;
-                while (left < right) {
-                    long tmp = *left;
-                    *left++ = *right;
-                    *right-- = tmp;
-                }
-
+                dest.Slice(1, n - 1).Reverse();
                 long nev = Invl(n, mod);
                 for (int i = 0; i < n; i++)
                     dest[i] = (dest[i] + mod) * nev % mod;

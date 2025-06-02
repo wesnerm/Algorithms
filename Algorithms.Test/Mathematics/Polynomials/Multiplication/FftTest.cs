@@ -1,8 +1,4 @@
-﻿using Algorithms.Mathematics.Multiplication.FFT;
-using Algorithms.Mathematics.Multiplication.NTT;
-using System.Reflection.Metadata;
-
-namespace Algorithms.Mathematics.Multiplication;
+﻿namespace Algorithms.Mathematics.Multiplication;
 
 [TestFixture]
 public class FftTest : FftTestBase

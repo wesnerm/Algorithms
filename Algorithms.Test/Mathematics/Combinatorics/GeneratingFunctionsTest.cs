@@ -74,7 +74,7 @@ public class GeneratingFunctionsTest
     void TestKaratsuba(long[] x, long[] y)
     {
         long[] pm = MultiplyPolynomialsMod(x, y, MOD);
-        long[] pk = KaratsubaFast(x, y);
+        long[] pk = Karatsuba(x, y);
 
         Trim(ref pk);
         Console.WriteLine(string.Join(",", pm));

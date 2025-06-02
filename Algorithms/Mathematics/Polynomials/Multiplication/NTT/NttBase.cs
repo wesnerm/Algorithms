@@ -3,9 +3,8 @@ using System.Runtime.InteropServices;
 
 namespace Algorithms.Mathematics.Multiplication.NTT;
 
-public abstract unsafe class NttBase
+public abstract class NttBase
 {
-    readonly int elementBytes = 8;
     public long[] A, B;
 
     public NttBase(int maxsize)
@@ -13,89 +12,72 @@ public abstract unsafe class NttBase
         int n = CeilingPowOfTwo(maxsize);
         A = new long[n];
         B = new long[n];
-        Debug.Assert(elementBytes == Marshal.SizeOf(A.GetType().GetElementType()));
     }
 
-    public long[] Multiply(long[] a, long[] b, int size, int mod = 998244353, int g = 3)
+    public long[] Multiply(ReadOnlySpan<long> a, ReadOnlySpan<long> b, int size, int mod = 998244353, int g = 3)
     {
         if (a.Length == 0 || b.Length == 0) return Array.Empty<long>();
-
-        fixed (long* fa = a)
-        fixed (long* fb = b)
-        fixed (long* dest = A) {
-            int resultSize = Multiply(fa, a.Length, fb, b.Length, dest, size, mod, g);
-            long[] result = new long[resultSize];
-            Array.Copy(A, 0, result, 0, resultSize);
-            return result;
-        }
+        int resultSize = Multiply(a, b, A, size, mod, g);
+        long[] result = new long[resultSize];
+        Array.Copy(A, 0, result, 0, resultSize);
+        return result;
     }
 
-    public int Multiply(long* a, int alen, long* b, int blen, long* dest, int maxSize, int mod, int g)
+    public int Multiply(ReadOnlySpan<long> a, ReadOnlySpan<long> b, Span<long> dest, int maxSize, int mod, int g)
     {
-        if (maxSize == 0 || maxSize > alen + blen - 1) {
-            maxSize = alen + blen - 1;
-        } else {
-            if (alen > maxSize) alen = maxSize;
-            if (blen > maxSize) blen = maxSize;
+        if (maxSize == 0 || maxSize > a.Length + b.Length - 1)
+        {
+            maxSize = a.Length + b.Length - 1;
+        }
+        else
+        {
+            if (a.Length > maxSize) a = a.Slice(0, maxSize);
+            if (b.Length > maxSize) b = b.Slice(0, maxSize);
         }
 
-        int m = CeilingPowOfTwo(alen + blen - 1);
-        fixed (long* fa = A)
-        fixed (long* fb = a != b ? B : A) {
-            Ntt(a, alen, m, fa, false, mod, g);
-            if (a != b) Ntt(b, blen, m, fb, false, mod, g);
-            for (int i = 0; i < m; i++)
-                fa[i] = fa[i] * fb[i] % mod;
-            Ntt(fa, m, m, dest, true, mod, g);
-        }
-
+        int m = CeilingPowOfTwo(a.Length + b.Length - 1);
+        var fa = new Span<long>(A, 0, m);
+        var fb = a != b ? new Span<long>(B, 0, m) : A;
+        Ntt(a, fa, false, mod, g);
+        if (a != b) Ntt(b, fb, false, mod, g);
+        for (int i = 0; i < m; i++)
+            fa[i] = fa[i] * fb[i] % mod;
+        Ntt(fa, dest.Slice(0, m), true, mod, g);
         return maxSize;
     }
 
-    public void Ntt(long[] a, int alen, int m, long[] dest, bool inverse, int mod, int g)
+    public void Ntt(ReadOnlySpan<long> a, Span<long> dest, bool inverse, int mod, int g)
     {
-        fixed (long* pa = a)
-        fixed (long* pdest = dest) {
-            Ntt(pa, alen, m, pdest, inverse, mod, g);
+        int m = dest.Length;
+        int copy = Math.Min(a.Length, m);
+        if (a.Slice(0, copy) != dest.Slice(0, copy))
+        {
+            a.Slice(0, copy).CopyTo(dest);
         }
 
-        /*
-        int copy = Math.Min(alen, m);
-        if (a != dest) Array.Copy(a, 0, dest, 0, copy);
-        if (m != copy) Array.Clear(dest, copy, m - copy);
-        fixed (long *pd = dest)
-            NttCore(m, pd, inverse, mod, g);
-        */
-    }
-
-    public void Ntt(long* a, int alen, int m, long* dest, bool inverse, int mod, int g)
-    {
-        int copy = Math.Min(alen, m);
-        if (a != dest) Buffer.MemoryCopy(a, dest, copy * elementBytes, copy * elementBytes);
-        long* cur = dest + copy;
-        long* end = dest + m;
-        while (cur < end) *cur++ = 0;
+        dest.Slice(copy).Fill(0);
         if (m >= 2)
-            NttCore(m, dest, inverse, mod, g);
+            NttCore(dest, inverse, mod, g);
     }
 
-    protected abstract void NttCore(int n, long* dst, bool inverse, int mod, int g);
+    protected abstract void NttCore(Span<long> dst, bool inverse, int mod, int g);
 
-    public long[] Exponentiate(long[] a, int p, int mod, int g)
+    public long[] Exponentiate(ReadOnlySpan<long> a, int p, int mod, int g)
     {
         // Exponentiation requires the polynomial to grow by a factor of p
         // because the curve produced by multiplication can't be described with fewer terms
 
         int m = CeilingPowOfTwo((a.Length - 1) * p + 1);
         long[] fa = new long[m];
-        Ntt(a, a.Length, m, fa, false, mod, g);
-        for (int i = 0; i < m; i++) {
+        Ntt(a, fa, false, mod, g);
+        for (int i = 0; i < m; i++)
+        {
             long v = fa[i];
             for (int j = 1; j < p; j++)
                 fa[i] = fa[i] * v % mod;
         }
 
-        Ntt(fa, fa.Length, m, fa, true, mod, g);
+        Ntt(fa, fa, true, mod, g);
         return fa;
     }
 
@@ -106,7 +88,8 @@ public abstract unsafe class NttBase
     public static long Invl(long a, long mod)
     {
         long b = mod, p = 1, q = 0;
-        while (b > 0) {
+        while (b > 0)
+        {
             long c = a / b, d = a;
             a = b;
             b = d % b;

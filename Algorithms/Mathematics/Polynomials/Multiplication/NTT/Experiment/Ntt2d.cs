@@ -16,14 +16,14 @@ public class Ntt2d
 
         // pre(m);
         for (int i = 0; i < n; i++)
-            ntt.Ntt(a[i], m, m, a[i], inverse, mod, g);
+            ntt.Ntt(a[i], a[i], inverse, mod, g);
 
         // pre(n);
         for (int j = 0; j < m; j++) {
             for (int i = 0; i < n; i++)
                 ha[i] = a[i][j];
 
-            ntt.Ntt(ha, n, n, ha, inverse, mod, g);
+            ntt.Ntt(ha, ha, inverse, mod, g);
             for (int i = 0; i < n; i++)
                 a[i][j] = ha[i];
         }
