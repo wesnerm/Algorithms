@@ -75,10 +75,6 @@ public static class Library
 
     public static long Div(long left, long divisor) => left * Inverse(divisor) % MOD;
 
-    public static long Add(long x, long y) => (x += y) >= MOD ? x - MOD : x;
-
-    public static long Subtract(long x, long y) => (x -= y) < 0 ? x + MOD : x;
-
     public static long Fix(long n) => (n %= MOD) >= 0 ? n : n + MOD;
 
     public static long ModPow(long n, long p, long mod = MOD)
@@ -146,32 +142,11 @@ public static class Library
 
     #region Common
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Ensure<T>(ref T[] array, int n)
-    {
-        if (n >= array.Length)
-            Resize(ref array, Max(n + 1, array.Length * 2));
-    }
-
     public static void Swap<T>(ref T a, ref T b)
     {
         T tmp = a;
         a = b;
         b = tmp;
-    }
-
-    public static void Clear<T>(T[] t, T value = default)
-    {
-        for (int i = 0; i < t.Length; i++)
-            t[i] = value;
-    }
-
-    public static V Get<K, V>(Dictionary<K, V> dict, K key) where V : new()
-    {
-        V result;
-        if (dict.TryGetValue(key, out result) == false)
-            result = dict[key] = new V();
-        return result;
     }
 
     public static T[] GetRange<T>(T[] x, int start, int count, bool extend = false)
@@ -200,20 +175,6 @@ public static class Library
         return left;
     }
 
-    public static long IntPow(long n, long p)
-    {
-        long b = n;
-        long result = 1;
-        while (p != 0) {
-            if ((p & 1) != 0)
-                result = result * b;
-            p >>= 1;
-            b = b * b;
-        }
-
-        return result;
-    }
-
     public static int Gcd(int n, int m)
     {
         while (true) {
@@ -225,250 +186,10 @@ public static class Library
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Log2(long value)
-    {
-        return unchecked(value != 0 ? BitOperations.Log2((ulong)value) : -1);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Log2(ulong value)
-    {
-        return value > 0 ? BitOperations.Log2(value) : -1;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int BitCount(long y)
-    {
-        return unchecked(BitOperations.PopCount((ulong)y));
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    // static int HighestOneBit(int n) => n != 0 ? 1 << Log2(n) : 0;
-    public static int HighestOneBit(int x)
-    {
-        return unchecked(x & (1 << BitOperations.Log2((uint)x)));
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long HighestOneBit(long x)
     {
         return x & (1L << BitOperations.Log2((ulong)x));
     }
-
-    public static int TrailingZeros(long x) => Log2(x & -x);
-
-    #endregion
-
-    #region Fast IO
-
-    #region Input
-
-    static Stream inputStream;
-    static int inputIndex, bytesRead;
-    static byte[] inputBuffer;
-    static StringBuilder builder;
-    const int MonoBufferSize = 4096;
-    const char EOL = (char)10, DASH = (char)45, ZERO = (char)48;
-
-    public static void InitInput(Stream input = null, int stringCapacity = 16)
-    {
-        builder = new StringBuilder(stringCapacity);
-        inputStream = input ?? Console.OpenStandardInput();
-        inputIndex = bytesRead = 0;
-        inputBuffer = new byte[MonoBufferSize];
-    }
-
-    static void ReadMore()
-    {
-        if (bytesRead < 0) throw new FormatException();
-        inputIndex = 0;
-        bytesRead = inputStream.Read(inputBuffer, 0, inputBuffer.Length);
-        if (bytesRead > 0) return;
-        bytesRead = -1;
-        inputBuffer[0] = (byte)EOL;
-    }
-
-    static int Read()
-    {
-        if (inputIndex >= bytesRead) ReadMore();
-        return inputBuffer[inputIndex++];
-    }
-
-    public static T[] Na<T>(int n, Func<T> func, int z = 0)
-    {
-        n += z;
-        var list = new T[n];
-        for (int i = z; i < n; i++) list[i] = func();
-        return list;
-    }
-
-    public static int[] Ni(int n, int z = 0) => Na(n, Ni, z);
-
-    public static long[] Nl(int n, int z = 0) => Na(n, Nl, z);
-
-    public static string[] Ns(int n, int z = 0) => Na(n, Ns, z);
-
-    public static int Ni() => checked((int)Nl());
-
-    public static long Nl()
-    {
-        int c = SkipSpaces();
-        bool neg = c == DASH;
-        if (neg) c = Read();
-
-        long number = c - ZERO;
-        while (true) {
-            int d = Read() - ZERO;
-            if (unchecked((uint)d > 9)) break;
-            number = number * 10 + d;
-            if (number < 0) throw new FormatException();
-        }
-
-        return neg ? -number : number;
-    }
-
-    public static char[] Nc(int n)
-    {
-        char[] list = new char[n];
-        for (int i = 0, c = SkipSpaces(); i < n; i++, c = Read()) list[i] = (char)c;
-        return list;
-    }
-
-    public static string Ns()
-    {
-        int c = SkipSpaces();
-        builder.Clear();
-        while (true) {
-            if (unchecked((uint)c - 33 >= 127 - 33)) break;
-            builder.Append((char)c);
-            c = Read();
-        }
-
-        return builder.ToString();
-    }
-
-    public static int SkipSpaces()
-    {
-        int c;
-        do
-            c = Read();
-        while (unchecked((uint)c - 33 >= 127 - 33));
-
-        return c;
-    }
-
-    public static string ReadLine()
-    {
-        builder.Clear();
-        while (true) {
-            int c = Read();
-            if (c < 32) {
-                if (c == 10 || c <= 0) break;
-                continue;
-            }
-
-            builder.Append((char)c);
-        }
-
-        return builder.ToString();
-    }
-
-    #endregion
-
-    #region Output
-
-    static Stream outputStream;
-    static byte[] outputBuffer;
-    static int outputIndex;
-
-    public static void InitOutput(Stream output = null)
-    {
-        outputStream = output ?? Console.OpenStandardOutput();
-        outputIndex = 0;
-        outputBuffer = new byte[65535];
-    }
-
-    public static void WriteLine(object obj = null)
-    {
-        Write(obj);
-        Write(EOL);
-    }
-
-    public static void WriteLine(long number)
-    {
-        Write(number);
-        Write(EOL);
-    }
-
-    public static void Write(long signedNumber)
-    {
-        ulong number = unchecked((ulong)signedNumber);
-        if (signedNumber < 0) {
-            Write(DASH);
-            number = unchecked((ulong)-signedNumber);
-        }
-
-        Reserve(20 + 1); // 20 digits + 1 extra for sign
-        int left = outputIndex;
-        do {
-            outputBuffer[outputIndex++] = (byte)(ZERO + number % 10);
-            number /= 10;
-        } while (number > 0);
-
-        int right = outputIndex - 1;
-        while (left < right) {
-            byte tmp = outputBuffer[left];
-            outputBuffer[left++] = outputBuffer[right];
-            outputBuffer[right--] = tmp;
-        }
-    }
-
-    public static void Write(object obj)
-    {
-        if (obj == null) return;
-
-        string? s = obj.ToString();
-        Reserve(s.Length);
-        for (int i = 0; i < s.Length; i++)
-            outputBuffer[outputIndex++] = (byte)s[i];
-    }
-
-    public static void Write(char c)
-    {
-        Reserve(1);
-        outputBuffer[outputIndex++] = (byte)c;
-    }
-
-    public static void Write(byte[] array, int count)
-    {
-        Reserve(count);
-        Copy(array, 0, outputBuffer, outputIndex, count);
-        outputIndex += count;
-    }
-
-    static void Reserve(int n)
-    {
-        if (outputIndex + n <= outputBuffer.Length)
-            return;
-
-        Dump();
-        if (n > outputBuffer.Length)
-            Resize(ref outputBuffer, Max(outputBuffer.Length * 2, n));
-    }
-
-    static void Dump()
-    {
-        outputStream.Write(outputBuffer, 0, outputIndex);
-        outputIndex = 0;
-    }
-
-    public static void Flush()
-    {
-        Dump();
-        outputStream.Flush();
-    }
-
-    #endregion
 
     #endregion
 }

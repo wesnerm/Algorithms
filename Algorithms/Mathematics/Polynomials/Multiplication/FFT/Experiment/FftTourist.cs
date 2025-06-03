@@ -46,7 +46,7 @@ public class FftTourist
             n = a.Length;
 
         Debug.Assert((n & (n - 1)) == 0);
-        int zeros = Log2(n);
+        int zeros = BitOperations.Log2((uint)n);
         EnsureBase(zeros);
         int shift = baseSize - zeros;
         for (int i = 0; i < n; i++)

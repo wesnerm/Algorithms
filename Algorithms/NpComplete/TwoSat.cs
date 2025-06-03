@@ -25,6 +25,13 @@ public class TwoSat
         return var;
     }
 
+    static void Ensure<T>(ref T[] array, int n)
+    {
+        if (n >= array.Length)
+            Array.Resize(ref array, Math.Max(n + 1, array.Length * 2));
+    }
+
+
     public void Either(int f, int j)
     {
         f *= 2;

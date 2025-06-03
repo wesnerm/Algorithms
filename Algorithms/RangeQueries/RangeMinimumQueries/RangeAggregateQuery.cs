@@ -1,5 +1,6 @@
 ﻿namespace Algorithms.RangeQueries;
 
+using System.Numerics;
 using T = long;
 
 public class RangeAggregateQuery
@@ -41,4 +42,7 @@ public class RangeAggregateQuery
         T pos2 = _table[curlog - 1, right - (1 << curlog) + 1];
         return _func(pos1, pos2);
     }
+
+    private static int Log2(long size) => size > 0 ? BitOperations.Log2((ulong)size) : -1;
+
 }

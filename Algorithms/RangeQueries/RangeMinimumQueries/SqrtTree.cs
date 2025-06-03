@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace Algorithms.RangeQueries.RangeMinimumQueries;
 
@@ -169,4 +170,7 @@ public class SqrtTree
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     SqrtTreeItem op(SqrtTreeItem a, SqrtTreeItem b) => a + b;
+
+    private static int Log2(long size) => size > 0 ? BitOperations.Log2((ulong)size) : -1;
+
 }

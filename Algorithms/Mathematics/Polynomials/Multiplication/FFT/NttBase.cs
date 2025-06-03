@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Algorithms.Mathematics.Multiplication.NTT;
@@ -83,7 +84,7 @@ public abstract class NttBase
 
     #region Helpers
 
-    public static int CeilingPowOfTwo(int size) => size > 1 ? HighestOneBit(size - 1) << 1 : 1;
+    public static int CeilingPowOfTwo(int size) => size > 1 ? (int)BitOperations.RoundUpToPowerOf2((uint)size) : 1;
 
     public static long Invl(long a, long mod)
     {

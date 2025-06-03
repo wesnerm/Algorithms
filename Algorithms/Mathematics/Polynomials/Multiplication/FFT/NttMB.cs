@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace Algorithms.Mathematics.Multiplication.NTT;
 
@@ -10,9 +11,9 @@ public class NttMB : NttBase
     {
         int n = dst.Length;
         unchecked {
-            int h = Log2(n & -n);
+            int h = BitOperations.Log2((uint)(n & -n));
             long b = HighestOneBit((long)mod) << 1;
-            int H = Log2(b) * 2;
+            int H = BitOperations.Log2((ulong)b) * 2;
             long m = b * b / mod;
 
             int[] wws = new int[1 << (h - 1)];

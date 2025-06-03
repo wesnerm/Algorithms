@@ -1,5 +1,6 @@
 ﻿namespace Algorithms.RangeQueries;
 
+using System.Numerics;
 using T = int;
 
 public class RangeMinimumQuery
@@ -14,7 +15,7 @@ public class RangeMinimumQuery
         Length = array.Length;
 
         int n = array.Length;
-        int lgn = Math.Max(1, Log2(n));
+        int lgn = Math.Max(1, BitOperations.Log2((uint)n));
         _table = new int[lgn, n];
 
         _table[0, n - 1] = n - 1;
@@ -45,4 +46,7 @@ public class RangeMinimumQuery
     }
 
     public T GetMin(int left, int right) => Array[GetArgMin(left, right)];
+
+    public static int Log2(int size) => BitOperations.Log2((uint)size);
+
 }

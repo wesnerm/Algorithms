@@ -1,4 +1,6 @@
-﻿namespace Algorithms.Mathematics;
+﻿using System.Numerics;
+
+namespace Algorithms.Mathematics;
 
 // SOURCE: https://www.codechef.com/viewsolution/21023237
 
@@ -49,7 +51,7 @@ public static class Polynomial2
         Debug.Assert(fftInitialized);
         int n = a.Length;
         Debug.Assert((n & (n - 1)) == 0); // work only with powers of two
-        int l = TrailingZeros(n & -n);
+        int l = (int)BitOperations.Log2((uint)(n & -n));
 
         for (int i = 0; i < n; ++i) {
             int j = RevBit(i, l);

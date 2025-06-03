@@ -1,4 +1,5 @@
-﻿using static System.Array;
+﻿using System.Numerics;
+using static System.Array;
 using static System.Math;
 
 namespace Algorithms.Mathematics.Multiplication;
@@ -18,7 +19,7 @@ public class FastFourierTransformMod
     public FastFourierTransformMod(int shift = 20, int mod = 1000000007)
     {
         MOD = mod;
-        MaxN = 1 << shift;
+        MaxN = Max(2, 1 << shift);
         double ff = 2 * PI / MaxN;
         wr = new double[MaxN];
         wi = new double[MaxN];
@@ -154,5 +155,5 @@ public class FastFourierTransformMod
         return (n & 1) == 0 ? sq : Multiply(x, sq);
     }
 
-    public static int FftSize(int size) => Max(2, HighestOneBit(size - 1) << 1);
+    public static int FftSize(int size) => Max(2, (int)BitOperations.RoundUpToPowerOf2((uint)size));
 }

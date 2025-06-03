@@ -1,4 +1,6 @@
-﻿namespace Algorithms.Collections.Mutable;
+﻿using System.Numerics;
+
+namespace Algorithms.Collections.Mutable;
 
 public class QPHashtable<K, V>
 {
@@ -13,7 +15,7 @@ public class QPHashtable<K, V>
         if (size == 0) {
             entries = Array.Empty<Entry>();
         } else {
-            int capacity = 2 << Log2(((size * 21L) >> 4) + 1);
+            int capacity = 2 << BitOperations.Log2((uint)(((size * 21L) >> 4) + 1));
             entries = new Entry[capacity];
         }
     }

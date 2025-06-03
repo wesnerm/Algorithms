@@ -1,4 +1,6 @@
-﻿namespace Algorithms.Collections.Trees;
+﻿using System.Numerics;
+
+namespace Algorithms.Collections.Trees;
 
 public class VanEmdeBoasDense : IEnumerable<int>
 {
@@ -19,6 +21,8 @@ public class VanEmdeBoasDense : IEnumerable<int>
     public int Min => root.Min;
 
     public int[] Table => this.ToArray();
+
+    public static int Log2(long size) => size > 0 ? BitOperations.Log2((ulong)size) : -1;
 
     public IEnumerator<int> GetEnumerator()
     {
@@ -217,7 +221,7 @@ public class VanEmdeBoasDense : IEnumerable<int>
                 return MaxValue;
             long mask = x >= 0 ? -1L << (x + 1) : -1;
             mask &= bitset;
-            return mask != 0 ? Log2(mask & -mask) : MaxValue;
+            return mask != 0 ? (int)BitOperations.Log2((uint)(mask & -mask)) : MaxValue;
         }
 
         // ~(x-1) = -x

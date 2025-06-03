@@ -1,4 +1,6 @@
-﻿namespace Algorithms.Mathematics.Multiplication.WalshTransform;
+﻿using System.Numerics;
+
+namespace Algorithms.Mathematics.Multiplication.WalshTransform;
 
 [TestFixture]
 public class FastWalshTransformTest
@@ -26,7 +28,7 @@ public class FastWalshTransformTest
         while (xx != 0) {
             int b = xx & -xx;
             xx -= b;
-            int b2 = Log2(b);
+            int b2 = BitOperations.Log2((uint)b);
             result += 1 << (b2 * 2);
         }
 

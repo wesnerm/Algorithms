@@ -1,4 +1,6 @@
-﻿namespace Algorithms.Mathematics;
+﻿using System.Numerics;
+
+namespace Algorithms.Mathematics;
 
 // fft code taken from e-maxx.ru/algo/fft_multiply
 
@@ -114,7 +116,7 @@ public class NumberTheoreticTransform2
     static int NttSize(int size)
     {
         // This is actually the lowest power of two that is >= size
-        int nttSize = size > 1 ? HighestOneBit(size - 1) << 2 : 2;
+        int nttSize = size > 1 ? (int)BitOperations.RoundUpToPowerOf2((uint)size) : 2;
         return nttSize;
     }
 

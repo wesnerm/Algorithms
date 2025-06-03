@@ -1,4 +1,7 @@
-﻿namespace Algorithms.RangeQueries;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
+
+namespace Algorithms.RangeQueries;
 
 public struct FenwickTree
 {
@@ -72,6 +75,13 @@ public struct FenwickTree
         // return i <= n ? i : -1; // for greater or equal
         return i < n ? i : -1;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int HighestOneBit(int x)
+    {
+        return x & (1 << BitOperations.Log2((ulong)x));
+    }
+
 
     public int Next(int x) => GetIndexGreater(SumInclusive(x));
 

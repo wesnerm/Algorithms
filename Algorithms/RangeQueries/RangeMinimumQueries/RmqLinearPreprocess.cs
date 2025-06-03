@@ -1,4 +1,6 @@
-﻿namespace Algorithms.RangeQueries;
+﻿using System.Numerics;
+
+namespace Algorithms.RangeQueries;
 
 // http://codeforces.com/contest/494/submission/9121141
 
@@ -12,7 +14,7 @@ public class RmqLinearPreprocess
     {
         _data = data;
         int n = _data.Length;
-        _lg = Log2(n) + 1;
+        _lg = BitOperations.Log2((uint)n) + 1;
 
         int blockLen = (n + _lg - 1) / _lg;
         _block = new int[blockLen, _lg];

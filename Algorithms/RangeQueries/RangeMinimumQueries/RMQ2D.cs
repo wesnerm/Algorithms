@@ -1,4 +1,6 @@
-﻿namespace Algorithms.RangeQueries.RangeMinimumQueries;
+﻿using System.Numerics;
+
+namespace Algorithms.RangeQueries.RangeMinimumQueries;
 
 public class RMQ2D
 {
@@ -33,7 +35,8 @@ public class RMQ2D
 
     public int Query(int x1, int y1, int dx, int dy)
     {
-        int lgdx = Log2(dx), lgdy = Log2(dy);
+        int lgdx = Log2(dx);
+        int lgdy = Log2(dy);
         int x2 = x1 + dx - (1 << lgdx);
         int y2 = y1 + dy - (1 << lgdy);
         int max = _rmq[y2, lgdy, x2, lgdx];
@@ -42,4 +45,7 @@ public class RMQ2D
         max = Math.Max(max, _rmq[y2, lgdy, x1, lgdx]);
         return max;
     }
+
+    private static int Log2(long size) => size > 0 ? BitOperations.Log2((ulong)size) : -1;
+
 }

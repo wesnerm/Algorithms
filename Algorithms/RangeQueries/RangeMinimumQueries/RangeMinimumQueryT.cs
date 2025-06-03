@@ -1,4 +1,6 @@
-﻿namespace Algorithms.RangeQueries;
+﻿using System.Numerics;
+
+namespace Algorithms.RangeQueries;
 
 public class RangeMinimumQuery<T>
 {
@@ -39,11 +41,14 @@ public class RangeMinimumQuery<T>
     public int GetArgMin(int left, int right)
     {
         if (left == right) return left;
-        int curlog = Log2(right - left + 1);
+        int curlog = BitOperations.Log2((ulong)(right - left + 1));
         int pos1 = _table[curlog - 1, left];
         int pos2 = _table[curlog - 1, right - (1 << curlog) + 1];
         return _compare(_array[pos1], _array[pos2]) <= 0 ? pos1 : pos2;
     }
 
     public T GetMin(int left, int right) => _array[GetArgMin(left, right)];
+
+    private static int Log2(long size) => size > 0 ? BitOperations.Log2((ulong)size) : -1;
+
 }

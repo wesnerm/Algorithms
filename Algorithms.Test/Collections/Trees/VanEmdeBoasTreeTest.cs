@@ -1,4 +1,6 @@
-﻿namespace Algorithms.Collections.Trees.Experimental;
+﻿using System.Numerics;
+
+namespace Algorithms.Collections.Trees.Experimental;
 
 [TestFixture]
 public class VanEmdeBoasTreeTest
@@ -24,7 +26,7 @@ public class VanEmdeBoasTreeTest
         if (M <= 1)
             return 1;
 
-        int m = Log2(M - 1) + 1;
+        int m = BitOperations.Log2((uint)(M - 1)) + 1;
         int m2 = m;
         int loBits = m2 / 2;
         int hiBits = m2 - loBits;

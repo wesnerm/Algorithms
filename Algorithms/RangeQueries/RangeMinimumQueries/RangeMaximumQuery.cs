@@ -1,5 +1,6 @@
 ﻿namespace Algorithms.RangeQueries;
 
+using System.Numerics;
 using RMQT = long;
 
 public class RangeMaximumQuery
@@ -14,7 +15,7 @@ public class RangeMaximumQuery
         _n = array.Length;
 
         int n = array.Length;
-        int lgn = Log2(n);
+        int lgn = BitOperations.Log2((uint)n);
         _table = new int[Math.Max(1, lgn), n];
 
         _table[0, n - 1] = n - 1;
@@ -45,4 +46,7 @@ public class RangeMaximumQuery
     }
 
     public RMQT GetMax(int left, int right) => _array[GetArgMax(left, right)];
+
+    private static int Log2(long size) => size > 0 ? BitOperations.Log2((ulong)size) : -1;
+
 }

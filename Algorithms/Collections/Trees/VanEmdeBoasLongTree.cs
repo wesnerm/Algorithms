@@ -1,4 +1,6 @@
-﻿namespace Algorithms.Collections.Trees;
+﻿using System.Numerics;
+
+namespace Algorithms.Collections.Trees;
 
 public class VanEmdeBoasLongTree : IEnumerable<long>
 {
@@ -28,6 +30,11 @@ public class VanEmdeBoasLongTree : IEnumerable<long>
         long i = -1;
         while ((i = Next(i)) < MaxValue)
             yield return i;
+    }
+
+    protected static int Log2(long size)
+    {
+        return size != 0 ? (int)BitOperations.Log2((ulong)size) : -1;
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -297,5 +304,8 @@ public class VanEmdeBoasLongTree : IEnumerable<long>
 
         public override bool Contains(long x, VanEmdeBoasLongTree v) =>
             (bitset & (1L << (int)x)) != 0 && unchecked((ulong)x < 64);
+
+        private static int Log2(long size) => size > 0 ? BitOperations.Log2((ulong)size) : -1;
+
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Algorithms.RangeQueries;
+﻿using System.Numerics;
+
+namespace Algorithms.RangeQueries;
 
 public class BitSegmentTree
 {
@@ -69,7 +71,7 @@ public class BitSegmentTree
             int pre = Prev(_bits[i][pos >> 6], pos & 63);
             if (pre != -1) {
                 pos = ((pos >> 6) << 6) | pre;
-                while (i > 0) pos = (pos << 6) | (63 - NumberOfLeadingZeros(_bits[--i][pos]));
+                while (i > 0) pos = (pos << 6) | (63 - BitOperations.LeadingZeroCount(_bits[--i][pos]));
                 return pos;
             }
         }
@@ -83,7 +85,7 @@ public class BitSegmentTree
             int nex = Next(_bits[i][pos >> 6], pos & 63);
             if (nex != -1) {
                 pos = ((pos >> 6) << 6) | nex;
-                while (i > 0) pos = (pos << 6) | NumberOfTrailingZeros(_bits[--i][pos]);
+                while (i > 0) pos = (pos << 6) | BitOperations.TrailingZeroCount(_bits[--i][pos]);
                 return pos;
             }
         }
@@ -95,14 +97,14 @@ public class BitSegmentTree
     {
         ulong h = HighestOneBit(set << ~n);
         if (h == 0L) return -1;
-        return NumberOfTrailingZeros(h) - (63 - n);
+        return BitOperations.TrailingZeroCount(h) - (63 - n);
     }
 
     static int Next(ulong set, int n)
     {
         ulong h = LowestOneBit(set >> n);
         if (h == 0L) return -1;
-        return NumberOfTrailingZeros(h) + n;
+        return BitOperations.TrailingZeroCount(h) + n;
     }
 
     public override string ToString()
@@ -113,15 +115,10 @@ public class BitSegmentTree
         return string.Join(" ", list);
     }
 
-    public static int NumberOfTrailingZeros(ulong v)
-    {
-        ulong lastBit = v & (ulong)-(long)v;
-        return unchecked(lastBit != 0 ? Log2((long)lastBit) : 64);
-    }
-
-    public static int NumberOfLeadingZeros(ulong n) => unchecked(32 - 1 - Log2((long)n));
-
     public static ulong LowestOneBit(ulong n) => n & unchecked((ulong)-(long)n);
 
     public static ulong HighestOneBit(ulong n) => unchecked(n != 0 ? 1UL << Log2((long)n) : 0);
+
+    private static int Log2(long size) => size > 0 ? BitOperations.Log2((ulong)size) : -1;
+
 }

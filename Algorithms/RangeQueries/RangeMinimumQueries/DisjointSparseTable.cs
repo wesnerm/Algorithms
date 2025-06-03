@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace Algorithms.RangeQueries.RangeMinimumQueries;
 
@@ -15,7 +16,7 @@ public class DisjointSparseTable
     public DisjointSparseTable(STType[] A)
     {
         this.A = A;
-        maxlev = Log2(n - 1) + 1;
+        maxlev = BitOperations.Log2((uint)(n - 1)) + 1;
         size = 1 << maxlev;
 
         for (int i = 0; i < maxlev; i++)
@@ -89,4 +90,7 @@ public class DisjointSparseTable
 
         return result;
     }
+
+    public static int Log2(int size) => size > 0 ? BitOperations.Log2((uint)size) : -1;
+
 }
